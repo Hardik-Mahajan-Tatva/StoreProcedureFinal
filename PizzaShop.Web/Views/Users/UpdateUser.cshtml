@@ -1,0 +1,235 @@
+@using PizzaShop.Repository.Models
+@model PizzaShop.Repository.ViewModels.UpdateUserViewModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Update User";
+}
+
+<div class="d-flex flex-column w-100 p-4">
+    <div class="d-flex justify-content-between w-100 mb-3">
+        <h1 class="custom-body-text-color">Edit User</h1>
+        <div class="d-flex align-items-center gap-2">
+
+            <div>
+                <a asp-controller="Users" asp-action="Users" class=" btn   btn-outline-primary ">
+                    Back
+                </a>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="p-3 shadow-sm bg-white rounded form-wrapper">
+            <form method="post" asp-controller="Users" asp-action="UpdateUser" class="p1" enctype="multipart/form-data">
+                <div class="row">
+                    <div class="col-12 col-md-6 ">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" asp-for="FirstName" placeholder="First Name ">
+                            <label for="FirstName">First Name*</label>
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 ">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="" placeholder="name@example.com"
+                                asp-for="LastName">
+                            <label for="LastName">Last Name*</label>
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-md-6 ">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="" placeholder="name@example.com"
+                                autocomplete="on" asp-for="Username">
+                            <label for="Username">User Name*</label>
+                            <span asp-validation-for="Username" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 ">
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="Role" asp-for="RoleId"
+                                aria-label="Floating label select example">
+                                @if (Model.Roles != null)
+                                {
+                                    @foreach (var role in Model.Roles as List<Role>)
+                                    {
+                                        <option value="@role.Roleid" selected="@((role.Roleid == Model.RoleId) ? true : false)">
+                                            @role.Rolename
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <label for="Role">Role*</label>
+                            <span asp-validation-for="RoleId" class="text-danger"></span>
+                            <input type="hidden" id="RoleName" name="RoleName" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 col-md-6 ">
+                        <div class="form-floating mb-3">
+                            <input type="email" class="form-control" id="" placeholder="name@example.com"
+                                autocomplete="on" asp-for="Email" disabled>
+                            <label for="Email">Email*</label>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6 ">
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="floatingSelect" aria-label="Floating label select example"
+                                asp-for="Status">
+                                <option value="Active">Active</option>
+                                <option value="InActive">InActive</option>
+                            </select>
+                            <label for="Status">Status*</label>
+                            <span asp-validation-for="Status" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                @{
+                    var hasImage = false;
+                    var imagePath = "";
+                    if (Model.ProfileImage != null)
+                    {
+                        hasImage = !string.IsNullOrEmpty(Model.ProfileImage);
+                        imagePath = hasImage ? Url.Content("~/images/uploads/" + Model.ProfileImage) : "";
+                    }
+
+
+                }
+                <input type="hidden" name="Itemimg" value="@Model.ProfileImage" />
+                <input type="hidden" asp-for="ProfileImage" id="profileImagePath" />
+                <div class="col-12 mt-xl-2 mb-3">
+                    <div class="input-group d-flex justify-content-center align-items-center file-upload p-4"
+                        style="border: 1.8px dashed #dee2e6; border-radius: 6px; position: relative;">
+                        <input type="hidden" id="RemoveImage" name="RemoveImage" value="false" />
+                        <div id="imagePreviewContainer"
+                            class="@(hasImage ? "d-flex" : "d-none") align-items-center gap-2">
+                            <img id="imagePreview" class="rounded-circle mb-2"
+                                style="width: 100px; height: 100px; object-fit: cover;" src="@imagePath" />
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-primary" onclick="editImage()">Edit</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                    onclick="removeImage()">Delete</button>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn d-flex align-items-center gap-2 @(hasImage ? "d-none" : "")"
+                            id="uploadButton" onclick="$('#inputGroupFile01').click();">
+                            <i class="bi bi-cloud-upload-fill"></i> Drag and Drop Or Browse files
+                            <div>Browse files</div>
+                        </button>
+
+                        <input type="file" class="form-control" name="itemImage" id="inputGroupFile01"
+                            style="display: none;" accept="image/*" onchange="handleImageUpload(this)">
+                    </div>
+                </div>
+
+                <div class="row mt-3 ">
+                    <div class="col-12 col-md-4">
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="Country" asp-for="Countryid"
+                                aria-label="Floating label select example" autocomplete="on">
+                                <option>Select Country*</option>
+                                @if (Model.Countries != null)
+                                {
+                                    @foreach (var country in Model.Countries as List<Country>)
+                                    {
+                                        <option value="@country.Countryid"
+                                            selected="@((country.Countryid == Model.Countryid) ? true : false)">
+                                            @country.Countryname
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <label for="Countryid">Country*</label>
+                            <span asp-validation-for="Countryid" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="State" asp-for="Stateidid"
+                                aria-label="Floating label select example">
+                                <option>Select State*</option>
+                                @if (Model.States != null)
+                                {
+                                    @foreach (var state in Model.States as List<State>)
+                                    {
+                                        <option value="@state.Stateid"
+                                            selected="@((state.Stateid == Model.Stateidid) ? true : false)">
+                                            @state.Statename
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <label for="Stateidid">State*</label>
+                            <span asp-validation-for="Stateidid" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="City" asp-for="Cityidid"
+                                aria-label="Floating label select example">
+                                <option>Select City*</option>
+                                @if (Model.Cities != null)
+                                {
+                                    @foreach (var city in Model.Cities as List<City>)
+                                    {
+                                        <option value="@city.Cityid"
+                                            selected="@((city.Cityid == Model.Cityidid) ? true : false)">
+                                            @city.Cityname
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="Cityidid" class="text-danger"></span>
+                            <label for="Cityidid">City*</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-12 col-md-4 ">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="" placeholder="name@example.com"
+                                asp-for="Zipcode">
+                            <label for="Zipcode">Zipcode*</label>
+                            <span asp-validation-for="Zipcode" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="" placeholder="name@example.com"
+                                autocomplete="on" asp-for="Address">
+                            <label for="Address">Address*</label>
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="" placeholder="name@example.com"
+                                autocomplete="on" asp-for="Phone">
+                            <label for="Phone">Phone*</label>
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex flex-row align-items-center justify-content-start gap-1 mt-1">
+                    <button type="submit" class="btn btn-primary  text-white">Update User</button>
+                    <a asp-controller="Users" asp-action="Users" class="btn btn-outline-primary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    window.TempData = {
+        ErrorMessage: '@TempData["ErrorMessage"]',
+        SuccessMessage: '@TempData["SuccessMessage"]',
+        WarningMessage: '@TempData["WarningMessage"]',
+        InfoMessage: '@TempData["InfoMessage"]'
+    };
+</script>
+@section Scripts {
+    <script src="~/js/update-existing-user.js"></script>
+}

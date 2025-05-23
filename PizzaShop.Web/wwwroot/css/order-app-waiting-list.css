@@ -1,0 +1,150 @@
+.section-tab {
+  border: none;
+  color: #6c757d;
+  font-weight: 600;
+  padding: 10px 15px;
+  display: block;
+  text-decoration: none;
+}
+
+.section-tab.active {
+  border-bottom: 2px solid #0066a7;
+  color: #0066a7;
+  font-weight: 600;
+}
+.waiting-token {
+  background-color: #f2f2f2 !important;
+}
+.badge {
+  font-size: 0.8rem;
+  padding: 0.25em 0.5em;
+  border-radius: 0.5rem;
+}
+
+.bg-light {
+  background-color: #a1a9b3 !important;
+  color: #ffffff !important;
+}
+
+.badge.bg-secondary {
+  background-color: #a1a9b3;
+  color: #fff;
+}
+
+.badge.ms-2 {
+  margin-left: 0.5rem;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+
+.btn-outline-primary {
+  color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-outline-primary:hover {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.btn-outline-secondary {
+  color: #6c757d;
+  border-color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #6c757d;
+  color: #fff;
+}
+
+.d-flex.gap-2 {
+  gap: 0.5rem;
+}
+
+.table td .bi:hover {
+  opacity: 0.8;
+}
+
+.tableheader {
+  font-weight: 600;
+  font-size: large;
+  color: #585b5e !important;
+}
+
+.table td,
+.table th {
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.table td:nth-child(1),
+.table th:nth-child(1) {
+  width: 10%;
+}
+
+.table td:nth-child(2),
+.table th:nth-child(2) {
+  width: 20%;
+}
+
+.table td:nth-child(3),
+.table th:nth-child(3) {
+  width: 10%;
+}
+
+.table td:nth-child(4),
+.table th:nth-child(4) {
+  width: 10%;
+}
+
+.table td:nth-child(5),
+.table th:nth-child(5) {
+  width: 10%;
+}
+
+.table td:nth-child(6),
+.table th:nth-child(6) {
+  width: 10%;
+}
+.table td:nth-child(7),
+.table th:nth-child(7) {
+  width: 10%;
+}
+.table td:nth-child(8),
+.table th:nth-child(8) {
+  width: 20%;
+}
+
+.truncate-text {
+  text-align: start;
+  display: inline-block;
+  max-width: 190px !important;
+  min-width: 190px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.table > :not(caption) > * > * {
+  padding: 0.5rem 0.5rem;
+  color: #585b5e !important;
+  background-color: var(--bs-table-bg);
+  border-bottom-width: var(--bs-border-width);
+  box-shadow: inset 0 0 0 9999px
+    var(--bs-table-bg-state, var(--bs-table-bg-type, var(--bs-table-accent-bg)));
+}

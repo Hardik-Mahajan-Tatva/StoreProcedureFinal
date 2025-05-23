@@ -1,0 +1,40 @@
+.section-btn:hover {
+  color: #0066a7 !important;
+}
+
+.section-btn:hover .drag-icon {
+  filter: invert(21%) sepia(99%) saturate(1065%) hue-rotate(181deg)
+    brightness(92%) contrast(94%);
+}
+
+.active-section {
+  color: #0066a7 !important;
+}
+
+.active-section .drag-icon {
+  filter: invert(21%) sepia(99%) saturate(1065%) hue-rotate(181deg)
+    brightness(92%) contrast(94%);
+}
+
+.section-btn .edit-section-btn,
+.section-btn .delete-section-btn {
+  display: none;
+}
+
+.section-btn:hover .edit-section-btn,
+.section-btn:hover .delete-section-btn {
+  display: inline-block;
+}
+
+.section-btn.addedit-section .edit-section-btn,
+.section-btn.addedit-section .delete-section-btn {
+  display: inline-block;
+}
+
+.section-btn {
+  height: 40px !important;
+}
+
+.sort-handle {
+  cursor: grab;
+}

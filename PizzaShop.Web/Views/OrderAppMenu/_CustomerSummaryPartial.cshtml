@@ -1,0 +1,139 @@
+@model PizzaShop.Repository.ViewModels.OrderInvoiceViewModel
+<style>
+
+</style>
+<div class="card-body" style="height: 100%;">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
+        <div class="d-flex align-items-center mb-2 mb-md-0">
+            <div class="bg-light rounded me-2">
+                <a class="btn" asp-controller="OrderAppTableView" asp-action="Index">
+                    <img src="/images/dinner-table-black.png" alt="Table Image">
+                </a>
+            </div>
+            <input type="hidden" id="totalTableCapacity" value="@Model.TableCapacity" />
+            <div onclick="location.reload()" style="cursor: pointer;">
+                @try
+                {
+                    if (Model?.Sections?.Any() == true)
+                    {
+                        <div class="text-muted small">Section: @string.Join(", ", Model.Sections)</div>
+                    }
+
+                    if (Model?.Tables?.Any() == true)
+                    {
+                        <div> <span class="fw-bold">Table:</span> @string.Join(", ", Model.Tables)</div>
+                    }
+                }
+                catch (Exception ex)
+                {
+                    <div class="text-danger">Error: @ex.Message</div>
+                }
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-primary" onclick="openQrCodeModal()">
+                <i class="bi bi-qr-code-scan text-primary"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-primary edit-customer-btn" id="loadCustomerDetails"
+                data-customer-id="@Model?.CustomerId">
+                <i class="bi bi-person-lines-fill text-primary"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-primary order-comment-btn" data-order-id="@Model?.OrderId">
+                <i class="bi bi-chat-left-text  text-primary"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="row  mb-2 d-md-flex ">
+        <div class="col-md-5">Item</div>
+        <div class="col-md-3 text-center">Quantity</div>
+        <div class="col-md-2 text-start">Amount</div>
+    </div>
+    <div id="customer-summary-container">
+    </div>
+    <div class="accordion  mb-2 " id="foodAccordion"
+        style="max-height: calc(40vh); overflow-y: auto;  scrollbar-width: thin;">
+
+    </div>
+
+    <div class="totals-section">
+        <div class="row">
+            <div class="col-6">Subtotal</div>
+            <div class="col-6 text-end" id="subTotal">₹0.00</div>
+        </div>
+
+        <div id="taxesContainer">
+        </div>
+        <div class="row" id="otherTaxRow" style="display: none;">
+            <div class="col-6">Other</div>
+            <div class="col-6 text-end" id="otherTax">₹0.00</div>
+        </div>
+        <div class="row fw-bold">
+            <div class="col-6">Grand Total</div>
+            <div class="col-6 text-end" id="grandTotal">₹0.00</div>
+        </div>
+    </div>
+
+
+    @{
+        var paymentMode = Model?.PaymentMethod ?? "";
+    }
+
+    <div class="d-flex flex-row justify-content-between mb-3 mt-1">
+        <div class="mb-2 fw-bold">Payment Method</div>
+        <div class="d-flex gap-3">
+            <div>
+                <input type="radio" name="paymentMethod" id="paymentCash" value="Cash" @(paymentMode == "Cash" ?
+                                                                                                           "checked" : "") />
+                <label for="paymentCash">Cash</label>
+            </div>
+            <div>
+                <input type="radio" name="paymentMethod" id="paymentCard" value="Card" @(paymentMode == "Card" ?
+                                                                                                           "checked" : "") />
+                <label for="paymentCard">Card</label>
+            </div>
+            <div>
+                <input type="radio" name="paymentMethod" id="paymentUPI" value="UPI" @(paymentMode == "UPI" ? "checked"
+                                                                                                         : "") />
+                <label for="paymentUPI">UPI</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-2 d-flex flex-row flex-md-row justify-content-end">
+        <div class="row g-2 d-flex flex-row flex-md-row justify-content-end">
+            <div class="col-12 col-sm-6 col-md-3 order-1">
+                <button class="btn  btn-primary add-item-with-modifier-to-database w-100 ">Save</button>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3 order-2">
+                <button id="completeOrderBtn" class="btn btn-outline-primary w-100 text-primary">Complete</button>
+            </div>
+            <div class="col-12 col-sm-6 col-md-3 order-3" id="generateInvoice">
+                <button class="btn btn-outline-primary w-100 text-primary">Generate Invoice</button>
+            </div>
+        </div>
+        <div class="col-12 col-sm-3 order-4 mt-2">
+            <button class="btn btn-outline-primary w-100 text-primary" id="cancelOrderButton"
+                data-order-id="@Model?.OrderId">Cancel</button>
+        </div>
+
+    </div>
+</div>
+<div class="modal fade" id="qrCodeModal" tabindex="-1" aria-labelledby="qrCodeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="qrCodeModalLabel">Menu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body text-center">
+                <img id="qrCodeImage" src="" alt="QR Code" class="img-fluid">
+            </div>
+
+            <div class="modal-footer d-flex justify-content-center">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Done</button>
+            </div>
+        </div>
+    </div>
+</div>

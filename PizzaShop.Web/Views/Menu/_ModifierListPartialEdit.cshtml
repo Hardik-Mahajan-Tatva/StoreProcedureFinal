@@ -1,0 +1,74 @@
+<div class="existing-modifier-wrapper">
+    <table class="table">
+        <tr class="tableheader">
+            <td>
+                <div class="d-flex">
+                    <input class="form-check-input me-3" type="checkbox" id="modifierMainCheckBoxExistingEdit"
+                        style="cursor:pointer;" />
+                    Name
+                </div>
+            </td>
+            <td>Unit</td>
+            <td>Rate</td>
+            <td>Quantity</td>
+        </tr>
+        @if (Model.Count == 0)
+        {
+            <tr>
+                <td colspan="4" class="text-center border-bottom-0">
+                    <div class="d-flex flex-column">
+                        <i class="bi bi-emoji-frown fs-4"></i>
+                        <div>No records found</div>
+                    </div>
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var modifier in Model)
+            {
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <input class="form-check-input me-3 modifier-checkboxExistingEdit" type="checkbox"
+                                style="cursor:pointer;" value="@modifier.ModifierId" />
+                            <span class="modifier-name">@modifier.Modifiername</span> <!-- Add this span with a class -->
+                        </div>
+                    </td>
+                    @* <td>@modifier.Unitid</td> *@
+                    <td>pcs</td>
+                    <td>@modifier.Rate</td>
+                    <td>@modifier.Quantity</td>
+
+                </tr>
+            }
+        }
+    </table>
+</div>
+@if (Model.Count != 0)
+{
+    <div class="pagination-container">
+        <span>Showing @Model.FromRec - @Model.ToRec of @Model.TotalItems</span>
+        <select id="pageSizeDropdownModifierExisting" class="form-select">
+            @foreach (var size in new int[] { 5, 10, 20 })
+            {
+                <option value="@size" selected="@(Model.PageSize == size ? "selected" : null)">@size</option>
+            }
+        </select>
+        <input type="hidden" id="totalPagesModifierExisting" value="@Model.TotalPages" data-current="@Model.PageIndex" />
+        <button id="prevPageBtnModifierExisting" @(Model.PageIndex <= 1 ? "disabled" : "")>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left"
+                viewBox="0 0 16 16">
+                <path fill-rule="evenodd"
+                    d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />
+            </svg>
+        </button>
+        <button id="nextPageBtnModifierExisting" @(Model.PageIndex >= Model.TotalPages ? "disabled" : "")>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right"
+                viewBox="0 0 16 16">
+                <path fill-rule="evenodd"
+                    d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
+            </svg>
+        </button>
+    </div>
+}

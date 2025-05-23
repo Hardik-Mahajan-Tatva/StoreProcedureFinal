@@ -1,0 +1,599 @@
+﻿@using PizzaShop.Repository.Models
+@using PizzaShop.Service.Interfaces
+@using System.Security.Claims
+@inject IAuthService AuthService
+@inject IHttpContextAccessor HttpContextAccessor
+@inject PizzaShop.Service.Interfaces.IPermissionService PermissionService
+@inject IMyProfileService _profileService
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] </title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    @RenderSection("Styles", required: false)
+    <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="~/images/favicon.svg" />
+    <link rel="shortcut icon" href="~/images/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="~/images/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="MyWebSite" />
+    <link rel="manifest" href="~/images/site.webmanifest" />
+</head>
+
+<body>
+    <div class="loader-container" id="loader">
+        <div class="loading-text">
+            <span id="pizza-quote">Loading your slice of goodness...</span>
+            <div>
+                <span class="dot">.</span>
+                <span class="dot">.</span>
+                <span class="dot">.</span>
+            </div>
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress"></div>
+        </div>
+    </div>
+
+    <div class="container-fluid p-0 m-0 " id="main-content" style="display: none;">
+        <div class="d-flex flex-row vw-100  p-0 m-0">
+            <!-- ============================================= aside section starts ============================================= -->
+            <div class="d-none d-xxl-flex flex-column bg-white pt-2 wrapper sidebar"
+                style="min-width: 280px !important; max-width: 280px !important;">
+                <ul class="list-unstyled d-flex flex-column gap-2">
+                    <li class="mb-3 mt-2">
+                        <div class="d-flex align-items-center justify-content-center gap-2">
+                            <img src="~/images/logos/pizzashop_logo.png" alt="This is logo img" width="20%"
+                                height="20%">
+                            <div>
+                                <h5 class="font-weight-bold custom-body-text-color">PIZZASHOP</h5>
+                            </div>
+                        </div>
+                    </li>
+
+                    @{
+                        var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+                        var user = HttpContextAccessor.HttpContext!.User;
+                        var userRole = user?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                        var hasUsersPermission = await PermissionService.RoleHasPermissionAsync(userRole!, "CanView", 1);
+                        var hasRoleAndPermissionPermission = await PermissionService.RoleHasPermissionAsync(userRole!,
+                        "CanView", 2);
+                        var hasMenuPermission = await PermissionService.RoleHasPermissionAsync(userRole!, "CanView", 3);
+                        var hasTableAndSectionPermission = await PermissionService.RoleHasPermissionAsync(userRole!,
+                        "CanView", 4);
+                        var hasTaxesAndFeesPermission = await PermissionService.RoleHasPermissionAsync(userRole!, "CanView",
+                        5);
+                        var hasOrdersPermission = await PermissionService.RoleHasPermissionAsync(userRole!, "CanView", 6);
+                        var hasCustomersPermission = await PermissionService.RoleHasPermissionAsync(userRole!, "CanView",
+                        7);
+                        var hasDashboardPermission = await PermissionService.RoleHasPermissionAsync(userRole!, "CanView",
+                        8);
+
+                    }
+                    @if (hasDashboardPermission)
+                    {
+                        <li
+                            class="ps-4 w-100 p-2 @(currentController == "Dashboard" ? "custom-active-ul-item-bg-color" : "")">
+                            <a asp-controller="Dashboard" asp-action="Dashboard" class="pe-auto text-decoration-none">
+                                <div class="d-flex justify-content-start align-items-center gap-2">
+                                    <img src="~/images/navbar-icons-rms/@(currentController == "Dashboard" ? "dashboard_active.png" : "dashboard_default.png")"
+                                        alt="Dashboard Image">
+                                    <div
+                                        class="@(currentController == "Dashboard" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                        Dashboard
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    }
+
+                    @if (hasUsersPermission)
+                    {
+                        <li class="ps-4 w-100 p-2 @(currentController == "Users" ? "custom-active-ul-item-bg-color" : "")">
+                            <a asp-controller="Users" asp-action="Users" class="pe-auto text-decoration-none">
+                                <div class="d-flex justify-content-start align-items-center gap-2">
+                                    <img src="~/images/navbar-icons-rms/@(currentController == "Users" ? "user_active.png" : "user_default.png")"
+                                        alt="Users Image">
+                                    <div
+                                        class="@(currentController == "Users" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                        Users</div>
+                                </div>
+                            </a>
+                        </li>
+                    }
+                    @if (hasRoleAndPermissionPermission)
+                    {
+                        <li
+                            class="ps-4 w-100 p-2 @(currentController == "RoleAndPermission" ? "custom-active-ul-item-bg-color" : "")">
+                            <a asp-controller="RoleAndPermission" asp-action="RoleAndPermission"
+                                class="pe-auto text-decoration-none">
+                                <div class="d-flex justify-content-start align-items-center gap-2">
+                                    <img src="~/images/navbar-icons-rms/@(currentController == "RoleAndPermission" ? "roles_active.png" : "roles_default.png")"
+                                        alt="Roles Image">
+                                    <div
+                                        class="@(currentController == "RoleAndPermission" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                        Role And Permission</div>
+                                </div>
+                            </a>
+                        </li>
+                    }
+                    @if (hasMenuPermission)
+                    {
+                        <li class="ps-4 w-100 p-2 @(currentController == "Menu" ? "custom-active-ul-item-bg-color" : "")">
+                            <a asp-controller="Menu" asp-action="Index" class="pe-auto text-decoration-none">
+                                <div class="d-flex justify-content-start align-items-center gap-2">
+                                    <img src="~/images/navbar-icons-rms/@(currentController == "Menu" ? "menu_active.png" : "menu_default.png")"
+                                        alt="Menu Image">
+                                    <div
+                                        class="@(currentController == "Menu" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                        Menu</div>
+                                </div>
+                            </a>
+                        </li>
+                    }
+                    @if (hasTableAndSectionPermission)
+                    {
+                        <li
+                            class="ps-4 w-100 p-2 @(currentController == "TableAndSection" ? "custom-active-ul-item-bg-color" : "")">
+                            <a asp-controller="TableAndSection" asp-action="TableAndSection"
+                                class="pe-auto text-decoration-none">
+                                <div class="d-flex justify-content-start align-items-center gap-2">
+                                    <img src="~/images/navbar-icons-rms/@(currentController == "TableAndSection" ? "table_active.png" : "table_default.png")"
+                                        alt="Table Image">
+                                    <div
+                                        class="@(currentController == "TableAndSection" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                        Table And Section</div>
+                                </div>
+                            </a>
+                        </li>
+                    }
+                    @if (hasTaxesAndFeesPermission)
+                    {
+                        <li
+                            class="ps-4 w-100 p-2 @(currentController == "TaxesAndFees" ? "custom-active-ul-item-bg-color" : "")">
+                            <a asp-controller="TaxesAndFees" asp-action="TaxesAndFees" class="pe-auto text-decoration-none">
+                                <div class="d-flex justify-content-start align-items-center gap-2">
+                                    <img src="~/images/navbar-icons-rms/@(currentController == "TaxesAndFees" ? "tax_active.png" : "tax_default.png")"
+                                        alt="Taxes Image">
+                                    <div
+                                        class="@(currentController == "TaxesAndFees" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                        Taxes And Fees</div>
+                                </div>
+                            </a>
+                        </li>
+                    }
+                    @if (hasOrdersPermission)
+                    {
+                        <li class="ps-4 w-100 p-2 @(currentController == "Orders" ? "custom-active-ul-item-bg-color" : "")">
+                            <a asp-controller="Orders" asp-action="Orders" class="pe-auto text-decoration-none">
+                                <div class="d-flex justify-content-start align-items-center gap-2">
+                                    <img src="~/images/navbar-icons-rms/@(currentController == "Orders" ? "orders_active.png" : "orders_default.png")"
+                                        alt="Orders Image">
+                                    <div
+                                        class="@(currentController == "Orders" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                        Orders</div>
+                                </div>
+                            </a>
+                        </li>
+                    }
+                    @if (hasCustomersPermission)
+                    {
+                        <li
+                            class="ps-4 w-100 p-2 @(currentController == "Customers" ? "custom-active-ul-item-bg-color" : "")">
+                            <a asp-controller="Customers" asp-action="Customers" class="pe-auto text-decoration-none">
+                                <div class="d-flex justify-content-start align-items-center gap-2">
+                                    <img src="~/images/navbar-icons-rms/@(currentController == "Customers" ? "customer_active.png" : "customer_default.png")"
+                                        alt="Customers Image">
+                                    <div
+                                        class="@(currentController == "Customers" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                        Customers
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    }
+                </ul>
+                <!-- #region -->
+            </div>
+            <!-- ============================================= aside section ends ============================================= -->
+
+            <div class="custom-body-page-color vh-100 w-100 p-0 m-0">
+                <!-- ============================================= h-nav section starts ============================================= -->
+                <div class="custom-navbar-bg-color d-flex justify-content-between align-items-center p-3 w-100">
+                    <div><img src="~/images/list.svg" alt="" width="30px" class="d-none d-lg- ">
+                        <img src="~/images/list.svg" alt="" width="30px" class="d-block d-xxl-none"
+                            data-bs-toggle="offcanvas" href="#offcanvasExample" role="button"
+                            aria-controls="offcanvasExample">
+                    </div>
+                    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample"
+                        aria-labelledby="offcanvasExampleLabel">
+                        <div class="offcanvas-header">
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                <img src="~/images/logos/pizzashop_logo.png" alt="This is logo img" width="20%"
+                                    height="20%">
+                                <div>
+                                    <h5 class="font-weight-bold custom-body-text-color">PIZZASHOP</h5>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                                aria-label="Close"></button>
+                        </div>
+                        <div class="offcanvas-body">
+                            <div>
+
+                                <!-- #added-->
+                                <ul class="list-unstyled d-flex flex-column gap-2">
+                                    <li
+                                        class="ps-4 w-100 p-2 @(currentController == "Dashboard" ? "custom-active-ul-item-bg-color" : "")">
+                                        <a asp-controller="Dashboard" asp-action="Dashboard"
+                                            class="pe-auto text-decoration-none">
+                                            <div class="d-flex justify-content-start align-items-center gap-2">
+                                                <img src="~/images/navbar-icons-rms/@(currentController == "Dashboard" ? "dashboard_active.png" : "dashboard_default.png")"
+                                                    alt="Dashboard Image">
+                                                <div
+                                                    class="@(currentController == "Dashboard" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                                    Dashboard
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </li>
+
+                                    <li
+                                        class="ps-4 w-100 p-2 @(currentController == "Users" ? "custom-active-ul-item-bg-color" : "")">
+                                        <a asp-controller="Users" asp-action="Users"
+                                            class="pe-auto text-decoration-none">
+                                            <div class="d-flex justify-content-start align-items-center gap-2">
+                                                <img src="~/images/navbar-icons-rms/@(currentController == "Users" ? "user_active.png" : "user_default.png")"
+                                                    alt="Users Image">
+                                                <div
+                                                    class="@(currentController == "Users" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                                    Users</div>
+                                            </div>
+                                        </a>
+                                    </li>
+
+                                    <li
+                                        class="ps-4 w-100 p-2 @(currentController == "RoleAndPermission" ? "custom-active-ul-item-bg-color" : "")">
+                                        <a asp-controller="RoleAndPermission" asp-action="RoleAndPermission"
+                                            class="pe-auto text-decoration-none">
+                                            <div class="d-flex justify-content-start align-items-center gap-2">
+                                                <img src="~/images/navbar-icons-rms/@(currentController == "RoleAndPermission" ? "roles_active.png" : "roles_default.png")"
+                                                    alt="Roles Image">
+                                                <div
+                                                    class="@(currentController == "RoleAndPermission" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                                    Role And Permission</div>
+                                            </div>
+                                        </a>
+                                    </li>
+
+                                    <li
+                                        class="ps-4 w-100 p-2 @(currentController == "Menu" ? "custom-active-ul-item-bg-color" : "")">
+                                        <a asp-controller="Menu" asp-action="Index"
+                                            class="pe-auto text-decoration-none">
+                                            <div class="d-flex justify-content-start align-items-center gap-2">
+                                                <img src="~/images/navbar-icons-rms/@(currentController == "Menu" ? "menu_active.png" : "menu_default.png")"
+                                                    alt="Menu Image">
+                                                <div
+                                                    class="@(currentController == "Menu" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                                    Menu</div>
+                                            </div>
+                                        </a>
+                                    </li>
+
+                                    <li
+                                        class="ps-4 w-100 p-2 @(currentController == "TableAndSection" ? "custom-active-ul-item-bg-color" : "")">
+                                        <a asp-controller="TableAndSection" asp-action="TableAndSection"
+                                            class="pe-auto text-decoration-none">
+                                            <div class="d-flex justify-content-start align-items-center gap-2">
+                                                <img src="~/images/navbar-icons-rms/@(currentController == "TableAndSection" ? "table_active.png" : "table_default.png")"
+                                                    alt="Table Image">
+                                                <div
+                                                    class="@(currentController == "TableAndSection" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                                    Table And Section</div>
+                                            </div>
+                                        </a>
+                                    </li>
+
+                                    <li
+                                        class="ps-4 w-100 p-2 @(currentController == "TaxesAndFees" ? "custom-active-ul-item-bg-color" : "")">
+                                        <a asp-controller="TaxesAndFees" asp-action="TaxesAndFees"
+                                            class="pe-auto text-decoration-none">
+                                            <div class="d-flex justify-content-start align-items-center gap-2">
+                                                <img src="~/images/navbar-icons-rms/@(currentController == "TaxesAndFees" ? "tax_active.png" : "tax_default.png")"
+                                                    alt="Taxes Image">
+                                                <div
+                                                    class="@(currentController == "TaxesAndFees" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                                    Taxes And Fees</div>
+                                            </div>
+                                        </a>
+                                    </li>
+
+                                    <li
+                                        class="ps-4 w-100 p-2 @(currentController == "Orders" ? "custom-active-ul-item-bg-color" : "")">
+                                        <a asp-controller="Orders" asp-action="Orders"
+                                            class="pe-auto text-decoration-none">
+                                            <div class="d-flex justify-content-start align-items-center gap-2">
+                                                <img src="~/images/navbar-icons-rms/@(currentController == "Orders" ? "orders_active.png" : "orders_default.png")"
+                                                    alt="Orders Image">
+                                                <div
+                                                    class="@(currentController == "Orders" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                                    Orders</div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                    <li
+                                        class="ps-4 w-100 p-2 @(currentController == "Customers" ? "custom-active-ul-item-bg-color" : "")">
+                                        <a asp-controller="Customers" asp-action="Customers"
+                                            class="pe-auto text-decoration-none">
+                                            <div class="d-flex justify-content-start align-items-center gap-2">
+                                                <img src="~/images/navbar-icons-rms/@(currentController == "Customers" ? "customer_active.png" : "customer_default.png")"
+                                                    alt="Customers Image">
+                                                <div
+                                                    class="@(currentController == "Customers" ? "custom-active-ul-item-text-color" : "text-muted") h6 m-0 p-0">
+                                                    Customers</div>
+                                            </div>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="btn-group w-25 d-flex justify-content-end align-items-center">
+                        @{
+                            string profileImagePath = "images/Default_pfp.svg.png";
+
+                            var email = User?.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value;
+
+                            if (!string.IsNullOrEmpty(email))
+                            {
+                                var userId = await _profileService.GetProfileUserIdAsync(email);
+
+                                var imagePath = await _profileService.GetProfileImagePathAsync(userId);
+                                var userImagePath = Url.Content("images/uploads/" + imagePath);
+
+                                if (!string.IsNullOrEmpty(imagePath))
+                                {
+                                    profileImagePath = userImagePath;
+                                }
+                            }
+                        }
+
+                        @if (userRole == "Manager")
+                        {
+                            <a asp-controller="OrderAppTableView" asp-action="Index" target="_blank">
+                                <i class="bi bi-phone text-white h2 me-2" style="cursor: pointer;"></i>
+                            </a>
+                        }
+                        @if (userRole == "Chef")
+                        {
+                            <a asp-controller="OrderAppKOT" asp-action="Index" target="_blank">
+                                <i class="bi bi-phone text-white h2 me-2" style="cursor: pointer;"></i>
+                            </a>
+                        }
+
+                        <img src="/@profileImagePath" alt="Profile Image" class="dropdown-toggle rounded-circle"
+                            data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" width="40px"
+                            height="40px" style="cursor: pointer;">
+                        <ul class="dropdown-menu dropdown-menu-lg-end">
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center justify-content-start"
+                                    asp-controller="MyProfile" asp-action="MyProfile" style="cursor: pointer;">
+
+                                    <img src="/@profileImagePath" class="rounded-circle" width="12%"
+                                        style="object-fit: cover;" />
+                                    <span class="ms-3"> @User!.FindFirst("username")?.Value</span>
+                                </a>
+                            </li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li class="p-0 m-0">
+                                <a class="dropdown-item text-black" asp-controller="MyProfile" asp-action="MyProfile">
+                                    <div class="d-flex gap-3">
+                                        <div>
+                                            <img src="~/images/profile.png" alt="">
+                                        </div>
+                                        <div>
+                                            My Profile
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-controller="MyProfile" asp-action="MyProfileChangePassword"
+                                    style="cursor: pointer;">
+                                    <div class="d-flex gap-3">
+                                        <div>
+                                            <img src="~/images/icons/reload.png" alt="">
+                                        </div>
+                                        <div>
+                                            Change Password
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <!-- Logout link that triggers the modal -->
+                            <li>
+                                <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal"
+                                    data-bs-target="#logoutModal">
+                                    <div class="d-flex gap-3">
+                                        <div>
+                                            <img src="~/images/icons/logout.png" alt="">
+                                        </div>
+                                        <div class="d-flex justify-content-start">
+                                            Logout
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- ============================================= h-nav section ends ============================================= -->
+
+                <!-- ============================================= main body starts ============================================= -->
+                <main role="main">
+                    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                    <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+                    @RenderBody()
+                    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+                    <script
+                        src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+                    <script
+                        src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
+
+
+
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/chosen/1.8.7/chosen.jquery.min.js"></script>
+
+                    <script src="https://kit.fontawesome.com/97aeca5a80.js" crossorigin="anonymous"></script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+                    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+                    <script src="~/js/site.js"></script>
+                </main>
+                <!-- ============================================= main body ends ============================================= -->
+
+            </div>
+
+        </div>
+    </div>
+    </div>
+
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered  bd-example-modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">Logout Confirmation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex flex-column align-items-center justify-content-center gap-2">
+                    <div>
+                        <img src="~/images/icons/warning-icon.svg" alt="" width="30px" height="30px">
+                    </div>
+                    <div>Are you sure you want to logout?</div>
+                </div>
+                <div class="modal-footer d-flex align-items-center justify-content-center">
+                    <form id="logoutForm" action="@Url.Action("Logout", "Auth")" method="post">
+                        <button type="submit" class="btn btn-primary">YES</button>
+                    </form>
+                    <button type="button" class="btn  btn-outline-primary" data-bs-dismiss="modal">NO</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="tokenRefreshModal" tabindex="-1" aria-labelledby="tokenRefreshModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered  bd-example-modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tokenRefreshModalLabel">Session Expiry Warning</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex flex-column align-items-center justify-content-center gap-2">
+                    <div>
+                        <img src="~/images/icons/warning-icon.svg" alt="" width="30px" height="30px">
+                    </div>
+                    <div>Your session is about to expire in <span id="countdownTimer">60</span> seconds.</div>
+                </div>
+                <div class="modal-footer d-flex align-items-center justify-content-center">
+                    <button type="button" class="btn btn-primary" id="refreshTokenBtn">Refresh Session</button>
+                    <form id="logoutFormRefreshToken" action="@Url.Action("Logout", "Auth")" method="post">
+                        <button type="submit" class="btn btn-primary">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    @RenderSection("Scripts", required: false)
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode/build/jwt-decode.min.js"></script>
+    <script>
+        function getTokenExpiry() {
+            const token = getCookie("AuthToken");
+            if (!token) return null;
+
+            try {
+                const decoded = jwt_decode(token);
+                return decoded.exp ? decoded.exp * 1000 : null;
+            } catch {
+                return null;
+            }
+        }
+
+        function getCookie(name) {
+            const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+            if (match) return match[2];
+            return null;
+        }
+
+        function refreshToken() {
+            fetch('/Auth/RefreshToken', {
+                method: 'POST',
+                credentials: 'same-origin'
+            }).then(res => {
+                if (!res.ok) {
+                    window.location.href = "/Auth/Login";
+                } else {
+                    $('#tokenRefreshModal').modal('hide');
+                    location.reload();
+                }
+            });
+        }
+
+        function showTokenExpiryModal(countdownTime) {
+            $('#tokenRefreshModal').modal('show');
+            let countdown = countdownTime;
+            const countdownElement = document.getElementById('countdownTimer');
+
+            const interval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
+
+                if (countdown <= 0) {
+                    clearInterval(interval);
+                    $('#tokenRefreshModal').modal('hide');
+                    window.location.href = "/Auth/Login";
+                }
+            }, 1000);
+
+            document.getElementById('refreshTokenBtn').onclick = function () {
+                refreshToken();
+                clearInterval(interval);
+            };
+        }
+
+        function checkTokenExpiryAndRefresh() {
+            const expiry = getTokenExpiry();
+            if (!expiry) return;
+
+            const now = Date.now();
+            const timeLeft = expiry - now;
+
+
+            if (timeLeft <= 60000 && timeLeft > 0) {
+                showTokenExpiryModal(Math.floor(timeLeft / 1000));
+            } else {
+                const checkAgainIn = timeLeft - 60000;
+                if (checkAgainIn > 0) {
+                    setTimeout(checkTokenExpiryAndRefresh, checkAgainIn);
+                }
+            }
+        }
+        document.addEventListener("DOMContentLoaded", checkTokenExpiryAndRefresh);
+    </script>
+</body>
+
+</html>

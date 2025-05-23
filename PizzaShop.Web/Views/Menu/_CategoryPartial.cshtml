@@ -1,0 +1,148 @@
+@inject PizzaShop.Service.Interfaces.IPermissionService PermissionService
+@{
+   var context = HttpContextAccessor?.HttpContext;
+   var user = context?.User;
+   var userRole = user?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+   var hasMenuPermissionAddEdit = false;
+   var hasMenuPermissionDelete = false;
+   if (!string.IsNullOrEmpty(userRole))
+   {
+      hasMenuPermissionAddEdit = await PermissionService.RoleHasPermissionAsync(userRole, "CanAddEdit", 3);
+      hasMenuPermissionDelete = await PermissionService.RoleHasPermissionAsync(userRole, "CanDelete", 3);
+   }
+}
+
+
+<style>
+   .category-btn:hover {
+      color: #0066a7 !important;
+   }
+
+   .category-btn:hover .drag-icon {
+      filter: invert(21%) sepia(99%) saturate(1065%) hue-rotate(181deg) brightness(92%) contrast(94%);
+   }
+
+   .active-category {
+      color: #0066a7 !important;
+   }
+
+   .active-category .drag-icon {
+      filter: invert(21%) sepia(99%) saturate(1065%) hue-rotate(181deg) brightness(92%) contrast(94%);
+   }
+
+   .category-btn .edit-category-btn,
+   .category-btn .delete-category-btn {
+      display: none;
+   }
+
+   .category-btn:hover .edit-category-btn,
+   .category-btn:hover .delete-category-btn {
+      display: inline-block;
+   }
+
+   @* .category-btn.addedit-category .edit-category-btn,
+   .category-btn.addedit-category .delete-category-btn {
+      display: inline-block;
+   } *@
+
+   .category-btn {
+      height: 40px !important;
+   }
+
+   .sort-handle {
+      cursor: grab;
+   }
+</style>
+<script>
+   function initializeCategorySortable() {
+      $("#categoryList").sortable({
+
+         update: function (event, ui) {
+            var sortedIDs = $(this).sortable('toArray').map(function (id) {
+               return id.split('-')[1];
+            });
+
+            $.ajax({
+               url: '@Url.Action("UpdateCategoryOrder", "Menu")',
+               type: 'POST',
+               contentType: 'application/json',
+               data: JSON.stringify(sortedIDs),
+               success: function (response) {
+                  toastr.success("Category order updated successfully!");
+               },
+               error: function (xhr, status, error) {
+                  toastr.clear();
+                  var response = xhr.responseJSON;
+                  if (xhr.status === 401 && response && response.message) {
+                     toastr.error(response.message);
+                  } else if (xhr.status === 400) {
+                     toastr.error("Bad Request: Please check your input.");
+                  } else if (xhr.status === 500) {
+                     toastr.error("Internal Server Error: Please try again later.");
+                  } else {
+                     toastr.error(response?.message || "An unexpected error occurred!");
+                  }
+               }
+            });
+         }
+      });
+   }
+
+   $(document).ready(function () {
+      initializeCategorySortable();
+   });
+
+</script>
+
+<div class="tab-pane fade show active " id="nav-home" role="tabpanel" aria-labelledby="pills-home-tab">
+   <div class="d-flex justify-content-between align-items-center px-3">
+      <h4 class="custom-body-text-color text-bold">Category</h4>
+      @if (hasMenuPermissionAddEdit)
+      {
+         <button class="btn p-0" id="openAddCategoryModal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="#0066a7" class="bi bi-plus-square"
+               viewBox="0 0 16 16">
+               <path
+                  d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z" />
+               <path
+                  d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4" />
+            </svg>
+         </button>
+      }
+      <button type="button" class="btn-close  d-block d-xl-none" aria-label="Close" id="closeBtn"></button>
+   </div>
+   <div class="overflow-auto mt-3 category-wrapper">
+      <ul class="list-unstyled list-group" id="categoryList">
+         @{
+            bool isFirstCategory = true;
+         }
+         @foreach (var category in Model)
+         {
+            string activeClass = isFirstCategory ? "active-category" : "";
+            isFirstCategory = false;
+            <li class="d-flex p-1 align-items-center justify-content-between category-btn btn @activeClass"
+               data-id="@category.CategoryId" id="category-@category.CategoryId">
+               <div class="d-flex align-items-center flex-wrap m-0 gap-2 ms-2">
+                  <div class="sort-handle"><i class="fas fa-grip-vertical"></i></div> <!-- Drag Handle -->
+                  <div class="text-truncate" style="max-width: 150px;">@category.CategoryName</div>
+               </div>
+               <div class="d-flex">
+                  @if (hasMenuPermissionAddEdit)
+                  {
+                     <button class="edit-category-btn btn p-0 m-1" data-id="@category.CategoryId">
+                        <img class="hover-img" src="~/images/icons/pen.svg" alt="edit-icon" />
+                     </button>
+                  }
+                  @if (hasMenuPermissionDelete)
+                  {
+                     <button class="delete-category-btn btn p-0 m-1" data-id="@category.CategoryId">
+                        <img class="hover-img" src="~/images/icons/trash.svg" alt="delete-icon" />
+                     </button>
+                  }
+               </div>
+            </li>
+         }
+      </ul>
+   </div>
+</div>

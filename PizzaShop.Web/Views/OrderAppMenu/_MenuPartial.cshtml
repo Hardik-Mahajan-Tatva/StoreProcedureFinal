@@ -1,0 +1,158 @@
+@model IEnumerable<PizzaShop.Repository.ViewModels.CategoryViewModel>
+@{
+    var orderId = ViewBag.OrderId;
+}
+
+<div class="row g-0" id="order-app-menu">
+    <div class="d-none d-xl-block col-md-2 px-0" style="background-color:#F8F9FA;">
+        <div class="category-sidebar">
+            <h5 class="mb-3 ps-4">Category</h5>
+            <ul class="list-group">
+                <li class="list-group-item list-group-item-action ps-4" data-category="favorite"
+                    style="cursor: pointer;">
+                    Favorite Items</li>
+                <li class="list-group-item list-group-item-action ps-4 active" data-category="All"
+                    style="cursor: pointer;">
+                    All</li>
+                @foreach (var category in Model)
+                {
+                    <li class="list-group-item list-group-item-action ps-4" data-category="@category.CategoryId"
+                        style="cursor: pointer;">
+                        @category.CategoryName</li>
+                }
+            </ul>
+        </div>
+    </div>
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="categoryOffcanvas">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Categories</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="category-sidebar">
+            <ul class="list-group">
+                <li class="list-group-item list-group-item-action" data-category="favorite" style="cursor: pointer;">
+                    Favorite Items</li>
+                <li class="list-group-item list-group-item-action active" data-category="All" style="cursor: pointer;">
+                    All</li>
+                @foreach (var category in Model)
+                {
+                    <li class="list-group-item list-group-item-action" data-category="@category.CategoryId"
+                        style="cursor: pointer;">
+                        @category.CategoryName</li>
+                }
+            </ul>
+        </div>
+    </div>
+
+    <div class="@(string.IsNullOrEmpty(orderId?.ToString()) ? "col-12 col-xl-10 " : "col-12 col-xl-5") ">
+        <div class="row  g-2 d-flex justify-content-sm-between justify-content-center align-items-center p-3">
+            <div class="col-12 col-sm-6 col-md-2 ">
+                <div class="d-flex align-items-center border rounded px-2 bg-none "
+                    style="gap: 5px; width: 220px; height: 38px; background-color:white;">
+                    <input class="form-control border-0 shadow-none p-0 " type="text" placeholder="Search"
+                        id="searchMenu" style="width: 100%; font-size: 14px; height: 100%; background-color:white;  ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="bi bi-search"
+                        viewBox="0 0 16 16">
+                        <path
+                            d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                    </svg>
+                </div>
+            </div>
+            <div class="d-flex  justify-content-end d-xl-none col-12 col-sm-6 col-md-2 ">
+                <div class="d-flex align-items-center  px-2 ">
+                    <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas"
+                        data-bs-target="#categoryOffcanvas">
+                        Categories
+                    </button>
+                </div>
+            </div>
+
+            <div class="  @((orderId == null) ? "col-12 col-xl-8 " : "col-12") text-end me-sm-4">
+                <div class="d-flex justify-content-end flex-wrap gap-2">
+                    <div>
+                        <span class="text-success">●</span> Vegetarian
+                    </div>
+                    <div>
+                        <span class="text-danger">●</span> Non-Vegetarian
+                    </div>
+                    <div>
+                        <span class="text-warning">●</span> Vegan
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row menu-items order-menu-wrapper">
+            @foreach (var item in ViewBag.Items)
+            {
+                var hasImage = !string.IsNullOrEmpty(item.Itemimg);
+                var imagePath = hasImage ? Url.Content("~/images/uploads/" + item.Itemimg) :
+                Url.Content("~/images/dining-menu.png");
+                <div class=" @((orderId == null) ? "col-12 col-sm-6 col-lg-4   " : "col-12 col-sm-6 ") mb-2 menu-item @item.Categoryid @item.Itemtype"
+                    title="@item.Itemname" style="cursor: pointer;" data-id="@item.Itemid" data-name="@item.Itemname"
+                    data-price="@item.Rate" data-favorite="@item.Isfavourite">
+                    <div class="menu-item-card" data-type="@item.Itemtype">
+                        <div class="item-icon">
+                            <img src="@imagePath" alt="@item.Itemname" class="img-fluid ">
+                        </div>
+                        <div class="item-info">
+                            <div class="item-name">@item.Itemname </div>
+                            <div class="item-price">₹@item.Rate</div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="wishlist-btn @(item.Isfavourite ? "active" : "")">
+                                <i class="bi @(item.Isfavourite ? "bi-heart-fill" : "bi-heart")"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="@(string.IsNullOrEmpty(orderId?.ToString()) ? "d-none" : "d-xl-none")">
+        <button class="btn btn-primary position-fixed bottom-0 end-0 m-3" type="button" data-bs-toggle="offcanvas"
+            data-bs-target="#customerSummaryOffcanvas">
+            <i class="bi bi-cart"></i>
+        </button>
+    </div>
+    <div class="@(string.IsNullOrEmpty(orderId?.ToString()) ? "d-none" : "col-5 p-3 d-none d-xl-block")">
+        <div class="row">
+            <div id="customer-summary-container" class="card border-light shadow-sm col-12">
+            </div>
+        </div>
+    </div>
+    <div class="offcanvas offcanvas-end d-xl-none" tabindex="-1" id="customerSummaryOffcanvas"
+        aria-labelledby="customerSummaryOffcanvasLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="customerSummaryOffcanvasLabel">Customer Summary</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div id="customer-summary-container-offcanvas" class="card border-light shadow-sm col-12">
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+<script>
+    $(document).ready(function () {
+        const offcanvasElement = $('#categoryOffcanvas')[0];
+        const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
+
+        $('#categoryOffcanvas').on('click', '.list-group-item', function () {
+            bsOffcanvas.hide();
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        const offcanvasElement = $('#customerSummaryOffcanvas')[0];
+        const bsOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
+
+        $('#customerSummaryOffcanvas').on('show.bs.offcanvas', function () {
+            const desktopContent = $('#customer-summary-container').html();
+            $('#customer-summary-container-offcanvas').html(desktopContent);
+        });
+    });
+</script>

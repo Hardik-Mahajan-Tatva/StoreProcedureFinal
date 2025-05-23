@@ -1,0 +1,22 @@
+.items-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  -webkit-transform: translateY(-5px);
+  -moz-transform: translateY(-5px);
+  -ms-transform: translateY(-5px);
+  -o-transform: translateY(-5px);
+}
+/* Chart styles */
+.chart-container {
+  height: 200px;
+  position: relative;
+}

@@ -1,0 +1,73 @@
+@model PizzaShop.Repository.ViewModels.AssignTableViewModel
+
+<div class="modal fade assign-table-modal" tabindex="-1" aria-labelledby="assignTableModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form class="assign-table-form" method="post" asp-action="AssignSelectedTablesToWaitingCustomer"
+                asp-controller="OrderAppWaitingList">
+                <input type="hidden" name="CustomerId" value="@Model.CustomerId" />
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="assignTableModalLabel">Assign Table</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <div class="form-select w-100 text-start section-dropdown-toggle"
+                                    id="sectionDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false"
+                                    style="cursor: pointer;">
+                                    Select Sections
+                                </div>
+                                <ul class="dropdown-menu w-100" aria-labelledby="sectionDropdownBtn">
+                                    <div id="sectionCheckboxList" style="max-height: 200px; overflow-y: auto;">
+                                        @if (Model.Sections != null)
+                                        {
+                                            @foreach (var sct in Model.Sections)
+                                            {
+                                                <li class="ms-2">
+                                                    <input type="checkbox" class="form-check-input me-2 section-checkbox"
+                                                        name="SelectedSectionIds" value="@sct.SectionId"
+                                                        id="section_@sct.SectionId" />
+                                                    <label for="section_@sct.SectionId">@sct.SectionName</label>
+                                                </li>
+                                            }
+                                        }
+                                    </div>
+                                </ul>
+                                <label for="sectionDropdownBtn"
+                                    style="background: none; pointer-events: none;">Sections*</label>
+                                <span asp-validation-for="SelectedSectionIds" class="text-danger"></span>
+                            </div>
+
+                        </div>
+
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <div class="form-select w-100 text-start table-dropdown-toggle" id="tableDropdownBtn"
+                                    data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                                    Select Tables
+                                </div>
+                                <ul class="dropdown-menu w-100" aria-labelledby="tableDropdownBtn">
+                                    <div id="tableCheckboxList" style="max-height: 200px; overflow-y: auto;">
+                                    </div>
+                                </ul>
+                                <label for="tableDropdownBtn"
+                                    style="background: none; pointer-events: none;">Tables*</label>
+                                <span asp-validation-for="TableIds" class="text-danger"></span>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary assign-btn">Assign</button>
+                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

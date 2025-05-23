@@ -1,0 +1,31 @@
+@model PizzaShop.Repository.ViewModels.SpecialInstructionViewModel
+
+<div class="modal fade" id="specialInstructionModal" tabindex="-1" aria-labelledby="specialInstructionModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="specialInstructionModalLabel">Special Instruction</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="SaveSpecialInstruction" asp-controller="OrderAppMenu" method="post"
+                id="specialInstructionForm" novalidate>
+                <div class="modal-body">
+                    <input type="hidden" asp-for="OrderId" id="orderId" />
+                    <input type="hidden" asp-for="OrderedItemId" id="orderedItemId" />
+
+                    <div class="form-floating mb-3">
+                        <textarea asp-for="Instruction" class="form-control" id="instruction"
+                            placeholder="Enter special instruction" style="height: 100px;"></textarea>
+                        <label for="instruction">Instruction</label>
+                        <span asp-validation-for="Instruction" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,132 @@
+@using PizzaShop.Repository.ViewModels
+@inject PizzaShop.Service.Interfaces.IPermissionService PermissionService
+@{
+    var context = HttpContextAccessor?.HttpContext;
+    var user = context?.User;
+    var userRole = user?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+    var hasTableAndSectionPermissionAddEdit = false;
+    var hasTableAndSectionPermissionDelete = false;
+    if (!string.IsNullOrEmpty(userRole))
+    {
+        hasTableAndSectionPermissionAddEdit = await PermissionService.RoleHasPermissionAsync(userRole, "CanAddEdit", 4);
+        hasTableAndSectionPermissionDelete = await PermissionService.RoleHasPermissionAsync(userRole, "CanDelete", 4);
+    }
+}
+
+<div class="table-section-wrapper">
+    <table class="table">
+        <tr class="tableheader">
+            <th class="px-auto mt-2">
+                <div class="d-flex">
+                    <input class="form-check-input me-3" type="checkbox" id="mainCheckBoxTable" />
+                    Name
+                </div>
+            </th>
+            <th>Capacity</th>
+            <th>Status</th>
+            @if (hasTableAndSectionPermissionAddEdit || hasTableAndSectionPermissionAddEdit)
+            {
+                <th>Action</th>
+            }
+        </tr>
+        <tbody>
+            @if (Model.TablesPaginated.Count == 0)
+            {
+                <tr>
+                    <td colspan="4" class="text-center border-bottom-0">
+                        <div class="d-flex flex-column">
+                        <i class="bi bi-emoji-frown fs-4"></i>
+                        <div>No records found</div>
+    </div>
+    </td>
+    </tr>
+}
+else
+{
+    @foreach (var table in Model.TablesPaginated)
+    {
+        <tr>
+            <td>
+                <div class="d-flex align-items-center">
+                    <input class="form-check-input me-3 child-checkbox" type="checkbox" name="child-checkbox-@table.TableId"
+                        id="child-checkbox-@table.TableId" />
+                    <input type="hidden" name="Tableid" value="@table.TableId">
+                    @table.TableName
+                </div>
+            </td>
+            <td>@table.Capacity</td>
+            <td>
+
+                <span
+                    class="rounded-pill px-2 status @(table.Status == TableStatus.Occupied ? "custom-table-status-occupied-bg-color text-white" :
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            table.Status == TableStatus.Available ? "custom-table-status-available-bg-color text-white" :
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            table.Status == TableStatus.Reserved ? "custom-table-status-reserved-bg-color text-white" : "")">
+            @table.Status
+        </span>
+    </td>
+    @if (hasTableAndSectionPermissionAddEdit || hasTableAndSectionPermissionDelete)
+            {
+                <td>
+                    <div class="d-flex justify-content-center align-items-center">
+                        @if (hasTableAndSectionPermissionAddEdit)
+                        {
+                            <button class="btn edit-table-btn cursor-pointer" data-bs-toggle="modal" data-id="@table.TableId"
+                                data-status="@table.Status">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-pen"
+                                    viewBox="0 0 16 16">
+                                    <path
+                                        d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z" />
+                                </svg>
+                            </button>
+                        }
+                        @if (hasTableAndSectionPermissionDelete)
+                        {
+                            <button class="btn delete-item-btn cursor-pointer" data-id="@table.TableId" data-status="@table.Status">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-trash3"
+                                    viewBox="0 0 16 16">
+                                    <path
+                                        d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5" />
+                                </svg>
+                            </button>
+                        }
+                    </div>
+                </td>
+            }
+        </tr>
+    }
+}
+</tbody>
+</table>
+</div>
+@if (Model.TablesPaginated.Count != 0)
+{
+    <div class="pagination-container d-flex flex-wrap flex-md-nowrap">
+        <span>Showing @ViewBag.FromRec - @ViewBag.ToRec of @ViewBag.TotalItems</span>
+        @{
+            int[] pageSizes = { 5, 10, 20 };
+        }
+
+        <select id="pageSizeDropdown" class="form-select">
+            @foreach (var size in pageSizes)
+            {
+                <option value="@size" selected="@(ViewBag.PageSize == size ? "selected" : null)">@size</option>
+            }
+        </select>
+        <input type="hidden" id="totalPages" value="@ViewBag.TotalPages" />
+        <button id="prevPageBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left"
+                viewBox="0 0 16 16">
+                <path fill-rule="evenodd"
+                    d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />
+            </svg>
+        </button>
+        <button id="nextPageBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right"
+                viewBox="0 0 16 16">
+                <path fill-rule="evenodd"
+                    d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
+            </svg>
+        </button>
+    </div>
+}

@@ -1,0 +1,84 @@
+@model PizzaShop.Repository.ViewModels.PaginatedList<PizzaShop.Repository.Models.User>
+@inject PizzaShop.Service.Interfaces.IPermissionService PermissionService
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Users";
+    var context = HttpContextAccessor?.HttpContext;
+    var user = context?.User;
+    var userRole = user?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+    var hasUsersPermissionAddEdit = false;
+    var hasUsersPermissionDelete = false;
+
+    if (!string.IsNullOrEmpty(userRole))
+    {
+        hasUsersPermissionAddEdit = await PermissionService.RoleHasPermissionAsync(userRole, "CanAddEdit", 1);
+        hasUsersPermissionDelete = await PermissionService.RoleHasPermissionAsync(userRole, "CanDelete", 1);
+    }
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/users-table.css" />
+}
+<div class="d-flex flex-column w-100 p-4">
+    <div class="d-flex justify-content-between w-100 mb-3 d-sm-row d-column flex-wrap flex-sm-nowrap  ">
+        <h1 class="custom-body-text-color">Users</h1>
+        <div class="d-flex align-items-center gap-2 d-sm-row d-column  flex-wrap flex-sm-nowrap gap-3">
+            <div class="d-flex align-items-center border rounded px-2 bg-white"
+                style="gap: 5px; width: 220px; height: 38px;">
+                <input class="form-control border-0 shadow-none p-0" type="text" placeholder="Search" id="search"
+                    style="width: 100%; font-size: 14px; height: 100%;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="bi bi-search" viewBox="0 0 16 16">
+                    <path
+                        d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0" />
+                </svg>
+            </div>
+
+            @if (hasUsersPermissionAddEdit)
+            {
+                <a asp-controller="Users" asp-action="AddNewUser"
+                    class="btn custom-navbar-bg-color text-white d-flex align-items-center \"
+                    style="height: 38px; padding: 6px 12px;">
+                    + Add User
+                </a>
+            }
+        </div>
+    </div>
+    <div id="userTableContainer">
+        @await Html.PartialAsync("_UserTablePartialView", Model)
+    </div>
+</div>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Delete Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex flex-column align-items-center justify-content-center gap-2">
+                <div>
+                    <img src="~/images/icons/warning-icon.svg" alt="" width="30px" height="30px">
+                </div>
+                <div>Are you sure you want to delete this user?</div>
+            </div>
+            <div class="modal-footer d-flex align-items-center justify-content-center">
+                <form id="deleteForm" method="post" asp-controller="Users" asp-action="DeleteUser">
+                    <input type="hidden" name="id" id="deleteUserId" value="" />
+                    <button type="submit" class="btn custom-navbar-bg-color text-white">YES</button>
+                </form>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">NO</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    window.TempData = {
+        ErrorMessage: '@TempData["ErrorMessage"]',
+        SuccessMessage: '@TempData["SuccessMessage"]',
+        WarningMessage: '@TempData["WarningMessage"]',
+        InfoMessage: '@TempData["InfoMessage"]'
+    };
+</script>
+@section Scripts {
+    <script src="~/js/users-table.js"></script>
+}

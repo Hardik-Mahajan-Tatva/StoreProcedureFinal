@@ -1,0 +1,74 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    var user = HttpContextAccessor?.HttpContext?.User;
+    var userRole = user?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css" />
+}
+<input type="hidden" id="userRoleHidden" value="@userRole" />
+<div class="container-fluid p-4">
+    <div class="d-flex flex-column flex-xl-row align-item-center justify-content-between gap-2 gap-xl-5 mb-3 ">
+        <h1 class="custom-body-text-color d-flex align-items-start mb-2">Dashboard</h1>
+        <div class="col-12 col-xl-9">
+            <div class="d-flex flex-column flex-sm-row align-item-center justify-content-end gap-1 flex-wrap">
+                <div class="form-floating custom-input-size mb-1">
+                    <select id="timeFilter" class="form-select h-100" style="cursor: pointer;">
+                        <option value="month">Current Month</option>
+                        <option value="today">Today</option>
+                        <option value="7">Last 7 Days</option>
+                        <option value="30">Last 30 Days</option>
+                        <option value="custom">Custom Date</option>
+                        <option value="year" class="d-none">This Year</option>
+                        <option value="all" class="d-none">All Time</option>
+                    </select>
+                    <label for="timeFilter">Time</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-column flex-sm-row align-item-center justify-content-end gap-2 mb-3 d-none">
+        <div class="form-floating custom-input-size">
+            <input type="date" id="startDate" class="form-control h-100" placeholder="Start Date">
+            <label for="startDate">Start Date</label>
+        </div>
+        <div class="form-floating custom-input-size">
+            <input type="date" id="endDate" class="form-control h-100" placeholder="End Date">
+            <label for="endDate">End Date</label>
+        </div>
+    </div>
+
+    <div id="dashboardContainer"></div>
+</div>
+
+<div class="modal fade " id="customDateModal" tabindex="-1" aria-labelledby="customDateModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" >
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="customDateModalLabel">Select Date Range</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex flex-column flex-md-row gap-1">
+                    <div class="form-floating custom-input-size">
+                        <input type="date" id="customStartDate" class="form-control" placeholder="Start Date">
+                        <label for="customStartDate">Start Date</label>
+                    </div>
+                    <div class="form-floating custom-input-size">
+                        <input type="date" id="customEndDate" class="form-control" placeholder="End Date">
+                        <label for="customEndDate">End Date</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="applyCustomDate" class="btn custom-navbar-bg-color text-white">Submit</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/dashboard.js"></script>
+}

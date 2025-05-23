@@ -1,0 +1,61 @@
+@model PizzaShop.Repository.ViewModels.WaitingTokenViewModel
+<div class="modal fade" id="editWaitingTokenModal" tabindex="-1" aria-labelledby="editwaitingTokenModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="editWaitingTokenForm" asp-controller="OrderAppWaitingList"
+                asp-action="SaveEditWaitingTokenToDatabase" method="post">
+                <input type="hidden" asp-for="CustomerId" />
+                <input type="hidden" asp-for="WaitingTokenId" />
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Waiting Token Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-floating mb-3">
+                        <input asp-for="Email" class="form-control" placeholder="Email" />
+                        <label for="Email">Email*</label>
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="Name" class="form-control" placeholder="Name" />
+                        <label for="Name">Name*</label>
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input asp-for="MobileNumber" class="form-control" placeholder="MobileNumber" />
+                        <label for="MobileNumber">Mobile Number*</label>
+                        <span asp-validation-for="MobileNumber" class="text-danger"></span>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="NoOfPersons" class="form-control" placeholder="NoOfPersons" />
+
+                                <label for="NoOfPersons">No. of Person(s)*</label>
+                                <span asp-validation-for="NoOfPersons" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-floating mb-3">
+                                <select asp-for="SectionId" class="form-select"
+                                    asp-items="@(new SelectList(Model.Sections, "SectionId", "SectionName", Model.SectionId))">
+                                </select>
+
+                                <label asp-for="SectionId">Section</label>
+                                <span asp-validation-for="SectionId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary text-white">Save</button>
+                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>

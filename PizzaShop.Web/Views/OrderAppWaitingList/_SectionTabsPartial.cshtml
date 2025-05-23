@@ -1,0 +1,38 @@
+@model PizzaShop.Repository.ViewModels.WaitingListPageViewModel
+
+<section class="bg-white mb-2">
+    <div class="overflow-auto scroll-hide">
+        <ul class="nav custom-tabs flex-nowrap d-flex list-unstyled mb-0" role="tablist"
+            style="white-space: nowrap; min-width: max-content;">
+            <li class="nav-item" style="cursor: pointer;">
+                <a class="nav-link @(Model.SelectedSectionId == 0 ? "active" : "") d-flex align-items-center section-tab"
+                    data-section-id="0">
+                    <div class="d-flex align-items-center gap-1 p-1">
+                        <div class="custom-text">All</div>
+                        <span class="badge badge-circle bg-light text-secondary custom-text">
+                            @if (Model.Sections != null)
+                            {
+                                @Model.Sections.Sum(s => s.WaitingListCount)
+                            }
+                        </span>
+                    </div>
+                </a>
+            </li>
+            @if (Model.Sections != null)
+            {
+                @foreach (var scs in Model.Sections)
+                {
+                    <li class="nav-item" style="cursor: pointer;">
+                        <a class="nav-link d-flex align-items-center section-tab @(Model.SelectedSectionId == scs.SectionId ? "active" : "")"
+                            href="javascript:void(0);" data-section-id="@scs.SectionId">
+                            <div class="d-flex align-items-center gap-1 p-1">
+                                <div class="custom-text">@scs.SectionName</div>
+                                <span class="badge badge-circle bg-light text-secondary"> @scs.WaitingListCount </span>
+                            </div>
+                        </a>
+                    </li>
+                }
+            }
+        </ul>
+    </div>
+</section>

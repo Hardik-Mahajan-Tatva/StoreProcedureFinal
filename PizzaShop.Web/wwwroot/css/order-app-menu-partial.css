@@ -1,0 +1,45 @@
+.list-group {
+  --bs-list-group-active-bg: #0066a7 !important;
+  --bs-list-group-active-border-color: #0066a7 !important;
+  --bs-list-group-bg: none !important;
+}
+
+.list-group-item.active {
+  border-top-right-radius: 2rem;
+  border-bottom-right-radius: 2rem;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  background-color: #0066a7 !important;
+  color: white;
+}
+
+.list-group-item-action:hover {
+  z-index: 1;
+  /* color: #f2f2f2;  */
+  text-decoration: none;
+  background-color: #f8f9fa;
+}
+
+/* Fix for scrollbar issues */
+
+#order-app-menu {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  height: calc(100vh - 70px);
+}
+
+.menu-items {
+  margin-right: 0;
+  margin-left: 0;
+}
+.offcanvas.offcanvas-end {
+  top: 10%;
+  right: 0;
+  /* left: 10%;  */
+  bottom: 10%;
+  width: 100%;
+  border-left: var(--bs-offcanvas-border-width) solid
+    var(--bs-offcanvas-border-color);
+}

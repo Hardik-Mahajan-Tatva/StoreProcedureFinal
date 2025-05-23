@@ -1,0 +1,466 @@
+@{
+    Layout = "~/Views/Shared/_OrderAppLayout.cshtml";
+    ViewData["Title"] = "Order App Table View";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/order-table-view.css" />
+}
+
+<div class="container-fluid p-4 ">
+    <div id="tableViewContainer">
+    </div>
+</div>
+<div id="assignCustomerModalContainer"></div>
+<div id="_addWaitingTokenModalPartial"></div>
+@await Html.PartialAsync("_AddWaitingTokenModalPartial")
+
+
+<script>
+
+    let selectedTableIds = [];
+    let selectedTables = [];
+
+    function handleTableClick(card, status, tableId) {
+        if (status === "Available") {
+            $(card).toggleClass("border border-success");
+
+            const tableCard = $(card);
+            const capacity = parseInt(tableCard.data("capacity"), 10);
+            const index = selectedTableIds.indexOf(tableId);
+
+            if (index === -1) {
+                selectedTableIds.push(tableId);
+                selectedTables.push({ tableId, capacity });
+            } else {
+                selectedTableIds.splice(index, 1);
+                selectedTables = selectedTables.filter(t => t.tableId !== tableId);
+            }
+
+            $(".assign-btn").prop("disabled", selectedTableIds.length === 0);
+
+            const enteredPersons = parseInt($("#noOfPersons").val(), 10);
+            if (!isNaN(enteredPersons)) {
+                checkCapacityAgainstPersons(enteredPersons);
+            }
+
+        } else {
+            const orderId = $(card).data("order-id");
+            if (orderId) {
+                $.ajax({
+                    url: '/OrderAppMenu/EncryptOrderId',
+                    type: 'GET',
+                    data: { orderId: orderId },
+                    success: function (response) {
+                        if (response.success) {
+                            const encryptedOrderId = response.encryptedOrderId;
+                            window.location.href = `/OrderAppMenu/Index?orderId=${encodeURIComponent(encryptedOrderId)}`;
+                        } else {
+                            toastr.error("Failed to encrypt order ID");
+                        }
+                    },
+                    error: function () {
+                        toastr.error("Error calling encryption API");
+                    }
+                });
+            } else {
+                toastr.error("Order ID not found for the selected table.");
+            }
+        }
+    }
+
+    $(document).on('change', '#noOfPersons', function () {
+        const enteredPersons = parseInt($(this).val(), 10);
+        checkCapacityAgainstPersons(enteredPersons);
+    });
+
+    $(document).on("click", "#assignCustomerCancelBtn", function () {
+        selectedTableIds = [];
+        selectedTables = [];
+
+        $(".table-card.border-success").removeClass("border border-success");
+
+        $(".assign-btn").prop("disabled", true);
+    });
+
+    function checkCapacityAgainstPersons(enteredPersons) {
+
+        const totalCapacity = selectedTables.reduce((sum, t) => sum + t.capacity, 0);
+        const sortedTables = [...selectedTables].sort((a, b) => b.capacity - a.capacity);
+        let usedTables = [];
+        let runningSum = 0;
+
+        for (let t of sortedTables) {
+            if (runningSum >= enteredPersons) break;
+            usedTables.push(t);
+            runningSum += t.capacity;
+        }
+
+        if (runningSum < enteredPersons) {
+            toastr.error(`Not enough seats even with all selected tables (only ${runningSum} capacity for ${enteredPersons} persons).`);
+        } else if (usedTables.length === 1 && selectedTables.length > 1) {
+            toastr.info(`Only one table (capacity ${usedTables[0].capacity}) is enough. No need to merge ${selectedTables.length} tables.`);
+        } else if (usedTables.length < selectedTables.length) {
+            const usedCap = usedTables.map(t => t.capacity).join(" + ");
+            toastr.info(`Only ${usedTables.length} table(s) [${usedCap}] are enough for ${enteredPersons} persons.`);
+        } else {
+            toastr.success(`Selected tables are suitable for ${enteredPersons} persons.`);
+        }
+    }
+
+
+    function openAssignCustomerModal() {
+        const selectedButtons = $('.table-card.border-success');
+        const sectionNames = new Set();
+
+        selectedButtons.each(function () {
+            const section = $(this).data("section");
+            if (section) {
+                sectionNames.add(section);
+            }
+        });
+
+        $.ajax({
+            url: '/OrderAppTableView/LoadAssignCustomerModal',
+            type: 'GET',
+            data: { selectedTableIds: JSON.stringify(selectedTableIds) },
+            success: function (html) {
+                $('#assignCustomerModalContainer').html(html);
+                $('#selectedTableIdsHidden').val(selectedTableIds.join(','));
+
+                const $dropdown = $('#sectionDropdown');
+                $dropdown.empty();
+
+                sectionNames.forEach(section => {
+                    $dropdown.append(`<option selected>${section}</option>`);
+                });
+
+                let offcanvas = new bootstrap.Offcanvas(document.getElementById('offcanvasWithBothOptions'));
+                offcanvas.show();
+
+                $.validator.unobtrusive.parse($('#assignCustomerModalContainer'));
+            },
+            error: function () {
+                toastr.error("Failed to load modal.");
+            }
+        });
+    }
+
+    function loadSections(preselectedSection) {
+        $.ajax({
+            url: '/OrderAppTableView/GetSections',
+            type: 'GET',
+            success: function (data) {
+                let dropdown = $('#sectionDropdown');
+                let dropdownModal = $('#sectionDropdownModal');
+                dropdown.empty();
+                dropdownModal.empty();
+                dropdown.append('<option value="" disabled>Select a Section</option>');
+                dropdownModal.append('<option value="" disabled>Select a Section</option>');
+
+                data.forEach(function (section) {
+                    let isSelected = section.sectionName === preselectedSection ? 'selected' : '';
+                    dropdown.append(`<option value="${section.sectionId}" ${isSelected}>${section.sectionName}</option>`);
+                    dropdownModal.append(`<option value="${section.sectionId}" ${isSelected}>${section.sectionName}</option>`);
+                });
+
+                if (preselectedSection) {
+                    dropdown.prop("disabled", true);
+                    dropdownModal.prop("disabled", true);
+                } else {
+                    dropdown.prop("disabled", false);
+                    dropdownModal.prop("disabled", false);
+                }
+            },
+            error: function () {
+                toastr.error("Failed to load sections.");
+            }
+        });
+    }
+
+    $(document).on('show.bs.modal', '#waitingTokenModal', function (event) {
+        var button = $(event.relatedTarget);
+        var sectionName = button.data('section');
+        loadSections(sectionName);
+    });
+
+    $(document).on("submit", "#assignCustomerForm", function (event) {
+        event.preventDefault();
+
+        $(".text-danger").text("");
+
+        var assignCustomerData = {
+            TableIds: selectedTableIds,
+            Email: $("#Email").val(),
+            CustomerId: $("#customerId").val() || 0,
+            Name: $("#Name").val(),
+            MobileNumber: $("#MobileNumber").val(),
+            NoOfPersons: parseInt($("#NoOfPersons").val()) || null,
+            SectionId: parseInt($("#sectionDropdown").val()) || null
+        };
+
+
+        $.ajax({
+            url: "/OrderAppTableView/AssignCustomerToOrder",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(assignCustomerData),
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message);
+
+                    let assignOrderOffCanvas = document.getElementById("offcanvasWithBothOptions");
+                    let modalInstance = bootstrap.Offcanvas.getOrCreateInstance(assignOrderOffCanvas);
+                    modalInstance.hide();
+
+                    if (response.orderId) {
+                        $.ajax({
+                            url: '/OrderAppMenu/EncryptOrderId',
+                            type: 'GET',
+                            data: { orderId: response.orderId },
+                            success: function (encryptResponse) {
+                                if (encryptResponse.success) {
+                                    const encryptedOrderId = encryptResponse.encryptedOrderId;
+                                    window.location.href = `/OrderAppMenu/Index?orderId=${encodeURIComponent(encryptedOrderId)}`;
+                                } else {
+                                    toastr.error("Failed to encrypt order ID.");
+                                }
+                            },
+                            error: function () {
+                                toastr.error("Error calling encryption API.");
+                            }
+                        });
+                    }
+                } else {
+                    if (response.message) {
+                        toastr.error(response.message);
+                    }
+
+                    if (response.errors) {
+                        for (let key in response.errors) {
+                            let message = response.errors[key][0];
+                            let inputField = $(`[name='${key}']`);
+
+                            if (inputField.length) {
+                                inputField.next(".text-danger").text(message);
+                            } else {
+                                $("#generalError").text(message);
+                            }
+                        }
+                    }
+                }
+            },
+            error: function () {
+                toastr.error("Something went wrong. Please try again.");
+            }
+        });
+    });
+
+
+
+    function openWaitingTokenModal(sectionName) {
+        $.ajax({
+            url: '/OrderAppTableView/GetSelectedSections',
+            type: 'GET',
+            success: function (sections) {
+                let sectionDropdown = $('#SectionId');
+                sectionDropdown.empty();
+
+                sectionDropdown.append('<option value="">Select a Section</option>');
+
+                sections.forEach(section => {
+                    if (section.sectionName === sectionName) {
+                        sectionDropdown.append(`<option value="${section.sectionId}" selected>${section.sectionName}</option>`);
+                    } else {
+                        sectionDropdown.append(`<option value="${section.sectionId}">${section.sectionName}</option>`);
+                    }
+                });
+
+                let waitingTokenModal = new bootstrap.Modal(document.getElementById('waitingTokenModal'));
+                waitingTokenModal.show();
+            },
+            error: function () {
+                toastr.error("Failed to load sections. Please try again.");
+            }
+        });
+    }
+    $(document).on('click', '#waitingTokenModal .btn-primary', function (e) {
+        e.preventDefault();
+
+        let form = $('#waitingTokenModal form');
+        $.ajax({
+            type: 'POST',
+            url: '/OrderAppTableView/SaveWaitingToken',
+            data: form.serialize(),
+            success: function (response) {
+                if (response.success) {
+                    $('#waitingTokenModal').modal('hide');
+                    toastr.success(response.message);
+                } else {
+                    if (response.errors) {
+                        form.find('.text-danger').text('');
+
+                        for (let key in response.errors) {
+                            let errorMessages = response.errors[key];
+                            let validationSpan = form.find(`span[data-valmsg-for="${key}"]`);
+                            if (validationSpan.length) {
+                                validationSpan.text(errorMessages.join(', '));
+                            }
+                        }
+                    } else {
+                        toastr.error(response.message);
+                    }
+                }
+            },
+            error: function () {
+                toastr.error("Something went wrong.");
+            }
+        });
+    });
+    $(document).on("click", ".assign-btn", function () {
+        let sectionIds = [];
+
+        $(".card.border-success").each(function () {
+            const sectionId = $(this).data("sectionid");
+            if (sectionId && !sectionIds.includes(sectionId)) {
+                sectionIds.push(sectionId);
+            }
+        });
+
+        if (sectionIds.length === 0) {
+            toastr.error("No sections found for selected tables.");
+            return;
+        }
+
+        $.ajax({
+            url: "/OrderAppTableView/GetWaitingListForSections",
+            type: "GET",
+            traditional: true,
+            data: { sectionIds: sectionIds },
+            success: function (data) {
+                var tbody = $('#waitingListTable tbody');
+                tbody.empty();
+
+                if (data.length === 0) {
+                    tbody.append(`<tr>
+                <td colspan="4" class="text-center">No records in waiting list</td>
+            </tr>`);
+                } else {
+                    data.forEach(function (item) {
+                        tbody.append(`<tr>
+                    <td><input type="radio" name="selectedCustomerId" value="${item.customerId}"></td>
+                    <td>#${item.waitingTokenId}</td>
+                    <td>${item.name}</td>
+                    <td>${item.noOfPersons}</td>
+                </tr>`);
+                    });
+                }
+
+                $('#offcanvasWithBothOptions').offcanvas('show');
+            },
+            error: function (err) {
+                toastr.error("Failed to load waiting list.");
+            }
+        });
+    });
+
+
+
+    $(document).on("change", "input[name='selectedCustomerId']", function () {
+        var customerId = $(this).val();
+        $.ajax({
+            url: "/OrderAppTableView/GetCustomerDetailsById",
+            type: "GET",
+            data: { customerId: customerId },
+            success: function (data) {
+                if (data) {
+                    $("#Email").val(data.email);
+                    $("#customerId").val(customerId);
+                    $("#Name").val(data.name);
+                    $("#MobileNumber").val(data.mobileNumber);
+                    $("#NoOfPersons").val(data.noOfPersons);
+                }
+            },
+            error: function (err) {
+            }
+        });
+    });
+
+    $(document).on('blur', '#Email', function () {
+        var email = $(this).val().trim();
+
+        if (!email) {
+            $('#Name, #MobileNumber, #NoOfPersons').val('');
+            return;
+        }
+
+        $.ajax({
+            url: '/OrderAppTableView/GetCustomerDetailsByEmail',
+            type: 'GET',
+            data: { email: email },
+            success: function (data) {
+                if (!data.success) {
+
+                    toastr.warning(data.message);
+                    $('#Email').val('');
+                    $('#Name, #MobileNumber, #NoOfPersons').val('');
+                    return;
+                }
+                if (data) {
+                    $('#Name').val(data.name);
+                    $('#MobileNumber').val(data.mobileNumber);
+                    $('#NoOfPersons').val(data.noOfPersons ?? '');
+                } else {
+                    $('#Name, #MobileNumber, #NoOfPersons').val('');
+                }
+            },
+            error: function () {
+                toastr.error('Error fetching customer data.');
+                $('#Name, #MobileNumber, #NoOfPersons').val('');
+            }
+        });
+    });
+
+    $(document).on('hidden.bs.modal', '#waitingTokenModal', function () {
+        $(this).find('form')[0].reset();
+
+        $(this).find('.text-danger').text('');
+    });
+    $(document).on('input', '#Email', function () {
+        var email = $(this).val().trim();
+        if (!email) {
+            $('#Name, #MobileNumber, #NoOfPersons').val('');
+        }
+    });
+
+
+    function updateTimers() {
+        const timers = document.querySelectorAll("[id^='timer-']");
+
+        timers.forEach(timer => {
+            const startTimeStr = timer.getAttribute("data-start");
+            if (!startTimeStr) return;
+
+            const startTime = new Date(startTimeStr);
+            const now = new Date();
+            const diffMs = now - startTime;
+
+            if (diffMs < 0) { timer.textContent = "0 sec"; return; } let totalSeconds = Math.floor(diffMs / 1000); const
+                years = Math.floor(totalSeconds / (365 * 24 * 60 * 60)); totalSeconds %= (365 * 24 * 60 * 60); const
+                    months = Math.floor(totalSeconds / (30 * 24 * 60 * 60)); totalSeconds %= (30 * 24 * 60 * 60); const
+                        days = Math.floor(totalSeconds / (24 * 60 * 60)); totalSeconds %= (24 * 60 * 60); const hours = Math.floor(totalSeconds /
+                            3600); totalSeconds %= 3600; const minutes = Math.floor(totalSeconds / 60); const seconds = totalSeconds % 60; let
+                                timeText = ""; if (years > 0) timeText += `${years} yr `;
+            if (months > 0) timeText += `${months} month `;
+            if (days > 0) timeText += `${days} day `;
+            if (hours > 0 && years === 0) timeText += `${hours} hr `;
+            if ((minutes > 0 || hours > 0) && years === 0) timeText += `${minutes} min `;
+            if (seconds > 0 && years === 0) timeText += `${seconds} sec`;
+
+            timer.textContent = timeText.trim();
+        });
+    }
+    updateTimers();
+    setInterval(updateTimers, 1000);
+</script>
+<script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>

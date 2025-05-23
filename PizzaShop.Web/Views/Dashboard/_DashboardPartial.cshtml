@@ -1,0 +1,192 @@
+@model PizzaShop.Repository.ViewModels.DashboardViewModel
+@{
+    var revenueChartDataJson = System.Text.Json.JsonSerializer.Serialize(Model.RevenueChartData);
+    var customerChartDataJson = System.Text.Json.JsonSerializer.Serialize(Model.CustomerGrowthData);
+    var isAdmin = Model.UserRole == "Admin";
+    var cardCount = isAdmin ? 4 : 3;
+    var colClass = "col-12 col-md-" + (12 / cardCount);
+}
+<div class="dashboard-content"
+    style="max-height: 70vh; overflow-y: auto; overflow-x: hidden;  scrollbar-width: thin; scrollbar-color: #ccc transparent;">
+
+    <div class="row g-3 mb-3">
+        <div class="col-xl-3 col-md-6">
+            <div class="card p-3 shadow-sm rounded h-100 position-relative" style="min-height: 150px; ">
+                <div class="position-absolute p-1 rounded-circle"
+                    style="top: 10px; right:10px; background-color: white; border: 2px solid #90EE90;">
+                    <div style="background-color: #90EE90;" class="rounded-circle p-2">
+                        <img src="~/images/icons/total-sales.svg" alt="Total Sales Icon" width="auto" height="auto">
+                    </div>
+                </div>
+                <div class="position-absolute" style="bottom: 10px; left: 15px;">
+                    <h5 id="totalSales" data-value="@Model.TotalSales">₹0</h5>
+                    <p class="mb-0 text-muted">Total Sales</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card p-3 shadow-sm rounded h-100 position-relative" style="min-height: 150px;">
+                <div class="position-absolute p-1 rounded-circle"
+                    style="top: 10px; right:10px; background-color: white; border: 2px solid #E1B2EE;">
+                    <div style="background-color: #E1B2EE;" class="rounded-circle p-2">
+                        <img src="~/images/icons/total-orders.svg" alt="Total orders Icon" width="auto" height="auto">
+                    </div>
+                </div>
+
+                <div class="position-absolute" style="bottom: 10px; left: 15px;">
+                    <h5 id="totalOrders" data-value="@Model.TotalOrders">0</h5>
+                    <p class="mb-0 text-muted">Total Orders</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card p-3 shadow-sm rounded h-100 position-relative" style="min-height: 150px;">
+                <div class="position-absolute p-1 rounded-circle"
+                    style="top: 10px; right:10px; background-color: white; border: 2px solid #ABCFE3;">
+                    <div style="background-color: #ABCFE3;" class="rounded-circle p-2">
+                        <img src="~/images/icons/order-value.svg" alt="Average Order Value Icon" width="auto"
+                            height="auto">
+                    </div>
+                </div>
+                <div class="position-absolute" style="bottom: 10px; left: 15px;">
+                    <h5 id="avgOrderValue" data-value="@Model.AvgOrderValue">₹0</h5>
+                    <p class="mb-0 text-muted">Avg. Order Value</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card p-3 shadow-sm rounded h-100 position-relative" style="min-height: 150px;">
+                <div class="position-absolute p-1 rounded-circle"
+                    style="top: 10px; right:10px; background-color: white; border: 2px solid #F7AEA3;">
+                    <div style="background-color: #F7AEA3;" class="rounded-circle p-2">
+                        <img src="~/images/icons/waiting-time.svg" alt="Average Waiting Time Icon" width="auto"
+                            height="auto">
+                    </div>
+                </div>
+                <div class="position-absolute" style="bottom: 10px; left: 15px;">
+                    <h5 id="avgWaitingTime" data-value="@Model.AvgWaitingTime">@Model.AvgWaitingTime mins</h5>
+                    <p class="mb-0 text-muted">Avg. Waiting Time</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+
+        <div class="col-12 col-md-6">
+            <div class="card p-3 shadow-sm rounded">
+                <h6 class="fw-bold mb-2">Revenue</h6>
+                <div class="chart-container">
+                    <canvas id="revenueChart" data-chart-data='@Html.Raw(revenueChartDataJson)'></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <div class="card p-3 shadow-sm rounded">
+                <h6 class="fw-bold mb-2">Customer Growth</h6>
+                <div class="chart-container">
+                    <canvas id="customerChart" data-chart-data='@Html.Raw(customerChartDataJson)'></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="@colClass">
+            <div class="card p-3 shadow-sm rounded h-100" style="min-height: 150px;">
+                <h6 class="fw-bold mb-2">Top Selling Items</h6>
+                <div class="custom-scroll"
+                    style="max-height: 150px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #ccc transparent;">
+                    @if (Model.TopSellingItems != null && Model.TopSellingItems.Any())
+                    {
+                        @for (int i = 0; i < Model.TopSellingItems?.Count; i++)
+                        {
+                            var item = Model.TopSellingItems[i];
+                            <div class="d-flex align-items-center mb-3 ">
+                                <span class="fw-bold me-2">#@(i + 1)</span>
+                                <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? Url.Content("~/images/dining-menu.png") : Url.Content("~/images/uploads/" + item.ImageUrl))"
+                                    class="me-2 rounded-circle" width="32" height="32" />
+                                <div class="d-flex flex-column align-items-start">
+                                    <span class="fw-semibold">@item.ItemName</span>
+                                    <small class="text-muted"><img src="~/images/bell.png" alt=""> @item.OrderCount
+                                        order@(item.OrderCount > 1 ? "s" : "")</small>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted mt-3">
+                            <i class="bi bi-emoji-frown fs-4"></i>
+                            <p>No top-selling items available for the selected date range.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="@colClass">
+            <div class="card p-3 shadow-sm rounded h-100" style="min-height: 150px;">
+                <h6 class="fw-bold mb-2">Least Selling Items</h6>
+                <div
+                    style="max-height: 150px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #ccc transparent;">
+                    @if (Model.LeastSellingItems != null && Model.LeastSellingItems.Any())
+                    {
+                        @for (int i = 0; i < Model.LeastSellingItems?.Count; i++)
+                        {
+                            var item = Model.LeastSellingItems[i];
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="fw-bold me-2">#@(i + 1)</span>
+                                <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? Url.Content("~/images/dining-menu.png") : Url.Content("~/images/uploads/" + item.ImageUrl))"
+                                    class="me-2 rounded-circle" width="32" height="32" />
+                                <div class="d-flex flex-column align-items-start">
+                                    <span class="fw-semibold">@item.ItemName</span>
+                                    <small class="text-muted"><img src="~/images/bell.png" alt=""> @item.OrderCount
+                                        order@(item.OrderCount > 1 ? "s" : "")</small>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted mt-3">
+                            <i class="bi bi-emoji-frown fs-4"></i>
+                            <p>No least-selling items available for the selected date range.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="@colClass">
+            <div class="card p-3 shadow-sm rounded h-100 position-relative" style="min-height: 150px;">
+                <div class="position-absolute p-1 rounded-circle"
+                    style="top: 10px; right:10px; background-color: white; border: 2px solid #FBC96E;">
+                    <div style="background-color: #FBC96E;" class="rounded-circle p-2">
+                        <img src="~/images/icons/waiting-list.svg" alt="Waiting List Icon" width="30" height="30">
+                    </div>
+                </div>
+                <div class="position-absolute" style="bottom: 10px; left: 15px;">
+                    <h5 id="waitingListCount" data-value="@Model.WaitingListCount">0</h5>
+                    <p class="mb-0 text-muted">Waiting List Count</p>
+                </div>
+            </div>
+        </div>
+        @if (isAdmin)
+        {
+            <div class="@colClass">
+                <div class="card p-3 shadow-sm rounded h-100 position-relative" style="min-height: 150px;">
+                    <div class="position-absolute p-1 rounded-circle"
+                        style="top: 10px; right:10px; background-color: white; border: 2px solid #FCA765;">
+                        <div style="background-color: #FCA765;" class="rounded-circle p-2">
+                            <img src="~/images/icons/customer.svg" alt="New Customer Icon" width="30" height="30">
+                        </div>
+                    </div>
+                    <div class="position-absolute" style="bottom: 10px; left: 15px;">
+                        <h5 id="newCustomerCount" data-value="@Model.NewCustomerCount">0</h5>
+                        <p class="mb-0 text-muted">New Customer Count</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

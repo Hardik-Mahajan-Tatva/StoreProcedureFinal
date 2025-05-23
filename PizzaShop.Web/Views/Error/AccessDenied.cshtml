@@ -1,0 +1,25 @@
+@{
+    Layout = "~/Views/Shared/_ErrorLayout.cshtml";
+    ViewData["Title"] = "Access Denied";
+}
+
+<div
+    class="container-fluid p-0 m-0  vw-100 vh-100 d-flex justify-content-center align-items-center custom-active-page-not-found-bg-color ">
+    <div class="d-flex flex-column justify-content-start align-items-center  ">
+        <div class="d-flex align-items-center justify-content-center gap-2 ">
+            <img src="~/images/logos/pizzashop_logo.png" alt="THis is logo img" width="10%" height="10%">
+            <div>
+                <h1 class="font-weight-bold custom-body-text-color ">PIZZASHOP</h1>
+            </div>
+        </div>
+        <div class="mb-5  d-flex flex-column justify-content-center align-items-center ">
+            <div class="custom-body-text-color  " id="custom-font-size">403</div>
+            <div class="h4">
+                AccessDenied
+            </div>
+            <div class="custom-body-text-color p-3 h4 ">
+                You do not have permission to access this page.
+            </div>
+        </div>
+    </div>
+</div>

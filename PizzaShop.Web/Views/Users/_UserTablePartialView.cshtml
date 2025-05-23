@@ -1,0 +1,144 @@
+@using System.Security.Claims
+@using PizzaShop.Repository.ViewModels
+@inject PizzaShop.Service.Interfaces.IPermissionService PermissionService
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    var user1 = HttpContextAccessor.HttpContext?.User;
+    var userRole = user1?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+    var hasUsersPermissionAddEdit = userRole != null && await PermissionService.RoleHasPermissionAsync(userRole,
+    "CanAddEdit", 1);
+    var hasUsersPermissionDelete = userRole != null && await PermissionService.RoleHasPermissionAsync(userRole, "CanDelete",
+    1);
+}
+<div class="table-responsive shadow-sm p-3 bg-white rounded shadow">
+    <div class="table-wrapper border-0">
+        <table class="table  ">
+            <tr class="tableheader">
+                <th scope="col">
+                    <a href="javascript:void(0);" class="sortable-column" data-column="Firstname">
+                        Name <i class="bi bi-arrow-up"></i><i class="bi bi-arrow-down"></i>
+                    </a>
+                </th>
+                <th scope="col">Email</th>
+                <th scope="col">Phone</th>
+                <th scope="col">
+                    <a href="javascript:void(0);" class="sortable-column" data-column="Roleid">
+                        Role <i class="bi bi-arrow-up"></i><i class="bi bi-arrow-down"></i>
+                    </a>
+                </th>
+                <th scope="col">Status</th>
+                @if (hasUsersPermissionAddEdit || hasUsersPermissionDelete)
+                {
+                    <th>Action</th>
+                }
+            </tr>
+            <tbody id="tableBody">
+                @if (Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center border-bottom-0">
+                            <div class="d-flex flex-column">
+                                <i class="bi bi-emoji-frown fs-4"></i>
+                                <div>No records found</div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var user in Model)
+                    {
+                        bool isCurrentUser = (ViewBag.CurrentUserId != null && user.Userid == ViewBag.CurrentUserId);
+                        var hasImage = !string.IsNullOrEmpty(user.Profileimg);
+                        var imagePath = hasImage ? Url.Content("~/images/uploads/" + user.Profileimg) :
+                        Url.Content("~/images/Default_pfp.svg.png");
+
+                        <tr>
+                            <td class="p-2 ">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="@imagePath" alt="Profile Image" width="30px" height="30px" alt="Profile Image"
+                                        width="30px" height="30px" class="rounded-circle" style="object-fit: fill;">
+
+
+                                    <span>@user.Firstname</span>
+                                </div>
+                            </td>
+                            <td class="p-2">@user.Email</td>
+                            <td class="p-2">@user.Phone</td>
+                            <td class="p-2 ">@((Roles)user.Roleid)</td>
+
+                            <td class="p-2">
+                                <span
+                                    class="rounded-pill px-2 @(user.Status == 1 ? "custom-status-bg-color" : "custom-status-inactive-bg-color")">
+                                    @((UserStatus)user.Status)
+                                </span>
+                            </td>
+                            @if (hasUsersPermissionAddEdit || hasUsersPermissionDelete)
+                            {
+                                <td class="p-2">
+                                    <div class="d-flex gap-4 justify-content-center">
+                                        @if (hasUsersPermissionAddEdit)
+                                        {
+                                            <a asp-controller="Users" asp-action="UpdateUser" asp-route-id="@user.Userid"
+                                                class="text-black text-reset @(isCurrentUser || ((Roles)user.Roleid) == (Roles)1 ? "disabled-link" : "")">
+                                                <i class="bi bi-pen fs-5"></i>
+                                            </a>
+                                        }
+                                        @if (hasUsersPermissionDelete)
+                                        {
+                                            <a href="#" data-userid="@user.Userid"
+                                                class="text-decoration-none text-black  @(isCurrentUser || ((Roles)user.Roleid) == (Roles)1 ? "disabled-link" : "")"
+                                                data-bs-toggle="modal" data-bs-target="#exampleModal">
+                                                <svg xmlns=" http://www.w3.org/2000/svg " width="20 " height="20 " fill="black "
+                                                    class="bi bi-trash " viewBox="0 0 16 16 ">
+                                                    <path
+                                                        d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z " />
+                                                    <path
+                                                        d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        4zM2.5 3h11V2h-11z " />
+                                                </svg>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+    @if (Model.Count != 0)
+    {
+        <div class="pagination-container  d-flex flex-wrap flex-md-nowrap">
+            <span>Showing @ViewBag.FromRec - @ViewBag.ToRec of @ViewBag.TotalItems</span>
+            @{
+                int[] pageSizes = { 5, 10, 20 };
+            }
+
+            <select id="pageSizeDropdown" class="form-select">
+                @foreach (var size in pageSizes)
+                {
+                    <option value="@size" selected="@(ViewBag.PageSize == size ? "selected" : null)">@size</option>
+                }
+            </select>
+
+            <input type="hidden" id="totalPages" value="@ViewBag.TotalPages" />
+            <button id="prevPageBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-chevron-left" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                        d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />
+                </svg>
+            </button>
+            <button id="nextPageBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                    class="bi bi-chevron-right" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd"
+                        d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
+                </svg>
+            </button>
+
+        </div>
+    }
+</div>

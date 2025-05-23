@@ -1,0 +1,123 @@
+@using PizzaShop.Repository.ViewModels
+@model IEnumerable<PizzaShop.Repository.ViewModels.TableViewModel>
+<div
+   class="d-flex flex-column flex-sm-row justify-content-between justify-content-between align-items-sm-center align-items-start mb-3">
+   <h1 class="custom-body-text-color">Table View</h1>
+   <div
+      class="d-flex flex-column flex-sm-row justify-content-between justify-content-between align-items-sm-center align-items-start mb-3 gap-2">
+      <span class="text-secondary d-flex align-items-center">
+         <span class="status-circle" style="background-color: #adb5bd;"></span>Available
+      </span>
+      <span class="text-secondary d-flex align-items-center">
+         <span class="status-circle" style="background-color: transparent; border: 2px solid #28a745;"></span>Selected
+      </span>
+      <span class="text-secondary d-flex align-items-center">
+         <span class="status-circle" style="background-color: #28a745;"></span>Assigned
+      </span>
+      <span class="text-secondary d-flex align-items-center">
+         <span class="status-circle" style="background-color: #0d6efd;"></span>Running
+      </span>
+   </div>
+</div>
+<div class="accordion order-app-table-view-wrapper pe-3 p-sm-1" id="sectionAccordion">
+   @foreach (var sct in Model
+      .GroupBy(t => new { t.SelectedSectionName, t.SectionId })
+      .OrderBy(sct => sct.Key.SelectedSectionName == "Ground Floor" ? 0 : sct.Key.SelectedSectionName == "First Floor" ? 1
+      : 2))
+   {
+      var sectionId = sct.Key.SectionId;
+      var sectionName = sct.Key.SelectedSectionName;
+      var availableCount = sct.Count(t => t.Status == TableStatus.Available);
+      var assignedCount = sct.Count(t => t.Status == TableStatus.Occupied);
+      var runningCount = sct.Count(t => t.Status == TableStatus.Running);
+      <div class="accordion-item mb-3" data-section-name="Section-@sectionId">
+         <div
+            class="accordion-header d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2 p-1"
+            id="heading-@sectionId">
+            <div class="d-flex flex-column flex-sm-row align-items-center flex-grow-1">
+               <button class="accordion-button collapsed custom-body-text-color " type="button" data-bs-toggle="collapse"
+                  data-bs-target="#collapse-@sectionId" aria-expanded="false" aria-controls="collapse-@sectionId">
+                  <h5 class="ms-2" style="color:#3083B7"> @sectionName</h5>
+               </button>
+               <div class="d-flex  align-items-center gap-3 me-3 me-sm">
+                  <span class="d-flex align-items-center">
+                     <span class="status-dot status-gray"></span> @availableCount
+                  </span>
+                  <span class="d-flex align-items-center">
+                     <span class="status-dot status-green"></span> @assignedCount
+                  </span>
+                  <span class="d-flex align-items-center">
+                     <span class="status-dot status-blue"></span> @runningCount
+                  </span>
+               </div>
+            </div>
+            <button class="d-block d-sm-none btn btn-outline-primary btn-sm p-1 mb-2 w-100 "
+               onclick="openWaitingTokenModal('@sectionId')">
+               <i class="bi bi-plus"></i> Waiting Token
+            </button>
+            <button class="d-none d-sm-block btn btn-outline-primary btn-sm p-2"
+               onclick="openWaitingTokenModal('@sectionId')">
+               <i class="bi bi-plus"></i> Waiting Token
+            </button>
+         </div>
+         <div id="collapse-@sectionId" class="accordion-collapse collapse" aria-labelledby="heading-@sectionId">
+            <div class="accordion-body">
+               <div class="row g-3">
+                  @foreach (var table in sct)
+                  {
+                     <div class="col-12 col-sm-4 col-md-3 col-lg-2  ">
+                        <div
+                           class="card table-card @(table.Status == TableStatus.Available ? "table-card-gray" :
+                                                                                                                                                                                              table.Status == TableStatus.Occupied ? "table-card-green" :
+                                                                                                                                                                                              table.Status == TableStatus.Reserved ? "table-card-yellow" :
+                                                                                                                                                                                              "table-card-blue")"
+                     onclick="handleTableClick(this, '@table.Status','@table.TableId')" data-table-id="@table.TableId"
+                     data-order-id="@table.OrderId" data-section="@sectionName" data-sectionId="@sectionId"
+                     data-capacity="@table.Capacity">
+                     <div class="card-body text-center">
+
+                              <div class="d-flex justify-content-between align-items-center">
+                                 <h6 class="card-title fw-bold text-primary mb-2">@table.TableName</h6>
+                                 <div>
+                              @if (table.Status == TableStatus.Running)
+                                    {
+                                       <text>@table.TotoaAmount</text>
+                                    }
+                                 </div>
+                              </div>
+                              <div class="d-flex justify-content-between align-items-center">
+                                 <i class="bi bi-people me-1"></i>
+                                 <i class="bi bi-stopwatch"></i>
+                              </div>
+                              <div class="d-flex justify-content-between align-items-center">
+                                 <div class="card-text mb-1">@table.Capacity</div>
+                                 <div class="card-text mb-1 text-end w-100 small">
+                                    @if (table.Status == TableStatus.Running || table.Status == TableStatus.Occupied)
+                                    {
+                                       <span id="timer-@table.TableId" data-start="@table.OccupiedStartTime?.ToString("o")">
+                                          Loading...
+                                       </span>
+                                    }
+                                    else
+                                    {
+                                       <span>0 min</span>
+                                    }
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  }
+               </div>
+
+               <div class="text-end mt-3">
+                  <button class="btn btn-primary assign-btn" disabled data-section="@sectionName"
+                     data-sectionId="@sectionId" onclick="openAssignCustomerModal('@sectionId')">
+                     Assign
+                  </button>
+               </div>
+            </div>
+         </div>
+      </div>
+   }
+</div>

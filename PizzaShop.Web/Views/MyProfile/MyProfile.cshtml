@@ -1,0 +1,418 @@
+@using PizzaShop.Repository.Models
+@model PizzaShop.Repository.ViewModels.MyProfileViewModel
+@{
+    Layout = ViewData["Layout"] as string;
+    ViewData["Title"] = "My Profie";
+}
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            @if (TempData["ErrorMessage"] != null)
+                {
+                    <text>toastr.error('@TempData["ErrorMessage"]');</text>
+            }
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <text>toastr.success('@TempData["SuccessMessage"]');</text>
+            }
+                @if (TempData["WarningMessage"] != null)
+                {
+                    <text>toastr.warning('@TempData["WarningMessage"]');</text>
+            }
+                @if (TempData["InfoMessage"] != null)
+                {
+                    <text>toastr.info('@TempData["InfoMessage"]');</text>
+            }
+                                                                                                                                                                                                         });
+    </script>
+}
+<div class="d-flex flex-column w-100 p-4 ">
+    <div class="d-flex justify-content-between w-100 mb-3 d-sm-row d-column flex-wrap flex-sm-nowrap ">
+        <h1 class="custom-body-text-color">My Profile</h1>
+        <div>
+            <a class="btn btn-outline-primary"
+                asp-controller="@(ViewData["From"] as string == "OrderApp" ? "OrderAppTableView" : "Dashboard")"
+                asp-action="@(ViewData["From"] as string == "OrderApp" ? "Index" : "Dashboard")"
+                asp-route-from="@ViewData["From"]">
+                Back
+            </a>
+        </div>
+
+    </div>
+    <div class=" position-relative ">
+        <div class=" form-wrapper bg-white">
+            <div class=" position-relative ">
+                <div class="position-absolute w-100 z-0 shadow-lg" style="height: 65px;">
+                    <img src="~/images/profile_div_bg.jpg" style="width: 100%; height: 100%;" alt="">
+                </div>
+                <div class=" d-flex flex-column flex-md-row justify-content-between w-100 align-items-center z-2"
+                    style="padding: 2rem 5rem 0.5rem !important;">
+                    <div class="left d-flex flex-column flex-md-row align-items-center gap-3">
+                        <div class="position-relative">
+                            <div class="overflow-hidden border border-black border-opacity-50 rounded-circle  shadow-lg"
+                                style="height: 150px; width: 150px;">
+                                <img id="displayImage"
+                                    src="@(string.IsNullOrEmpty(Model.ProfileImage) ? Url.Content("~/images/Default_pfp.svg.png") : Url.Content(Model.ProfileImage.StartsWith("/") ? Model.ProfileImage : "~/images/uploads/" + Model.ProfileImage))"
+                                    style="width: 100%; height: 100%; object-fit: cover;" alt="Profile Image">
+                            </div>
+                            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                            <div class="dropdown position-absolute z-3" style="bottom: -10px; left: 100px;">
+                                <div class="btn  border rounded-circle" style="background: #f2f2f2;">
+                                    <button class="border-0" type="button" id="imageDropdown" data-bs-toggle="dropdown"
+                                        aria-expanded="false">
+                                        <i class="bi bi-camera"></i>
+                                    </button>
+
+                                    <ul class="dropdown-menu" aria-labelledby="imageDropdown">
+                                        <li><a class="dropdown-item" href="#" id="uploadImageOption">Upload Image</a>
+                                        </li>
+                                        <li><a class="dropdown-item text-danger" href="#" id="deleteImageOption">Delete
+                                                Image</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            </button>
+                        </div>
+                        <div style="padding-top: 1rem; padding-left: 0.5rem; padding-right: 0.5rem;"
+                            class="d-flex  justify-content-between">
+                            <div class="d-flex flex-column justify-content-start">
+                                <div class="mb-0 h3">@Model.FirstName @Model.LastName</div>
+                                <div class="mb-0">@Model.Role</div>
+                                <div class="d-block d-md-none"> @Model.Email</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="right z-2 d-none d-md-block">
+                        @Model.Email
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="p-3 shadow-sm  rounded form-wrapper border-0">
+                    <form asp-controller="MyProfile" asp-action="MyProfile" class="p-1" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="from" value="@ViewData["From"]" />
+                        <input type="hidden" asp-for="Userid" />
+                        <div class="row">
+                            <div class="col-12 col-md-6 ">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" asp-for="FirstName"
+                                        placeholder="First Name " id="FirstName">
+                                    <label for="FirstName">First Name</label>
+                                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 ">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" placeholder="name@example.com"
+                                        asp-for="LastName" id="LastName">
+                                    <label for="LastName">Last Name</label>
+                                    <span asp-validation-for="LastName" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 col-md-6 ">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" placeholder="name@example.com"
+                                        asp-for="Username" id="Username" autocomplete="on">
+                                    <label for="Username">User Name</label>
+                                    <span asp-validation-for="Username" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 ">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" placeholder="name@example.com"
+                                        asp-for="Phone" id="Phone" autocomplete="on">
+                                    <label for="Phone">Phone</label>
+                                    <span asp-validation-for="Phone" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12 col-md-4">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="Countryid" asp-for="Countryid">
+                                        <option value="0">Select Country</option>
+                                        @foreach (var country in Model.Countries ?? new List
+                                                                                <Country>
+                                                                                ())
+                                        {
+                                            <option value="@country.Countryid"
+                                                selected="@(country.Countryid == Model.Countryid)">
+                                                @country.Countryname
+                                            </option>
+                                        }
+                                    </select>
+                                    <label for="Countryid">Country</label>
+                                    <span asp-validation-for="Countryid" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="Stateid" asp-for="Stateid">
+                                        <option value="0">Select State</option>
+                                        @foreach (var state in Model.States ?? new List
+                                                                                <State>
+                                                                                ())
+                                        {
+                                            <option value="@state.Stateid" selected="@(state.Stateid == Model.Stateid)">
+                                                @state.Statename
+                                            </option>
+                                        }
+                                    </select>
+                                    <label for="Stateidid">State</label>
+                                    <span asp-validation-for="Stateid" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="Cityid" asp-for="Cityid">
+                                        <option value="0">Select City</option>
+                                        @foreach (var city in Model.Cities ?? new List
+                                                                                <City>
+                                                                                ())
+                                        {
+                                            <option value="@city.Cityid" selected="@(city.Cityid == Model.Cityid)">
+                                                @city.Cityname
+                                            </option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Cityid" class="text-danger"></span>
+                                    <label for="Cityid">City</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12 col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="Address" placeholder="Address"
+                                        asp-for=" Address" autocomplete="on">
+                                    <label for="Address">Address</label>
+                                    <span asp-validation-for="Address" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 ">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="Zipcode" placeholder="name@example.com"
+                                        asp-for="Zipcode">
+                                    <label for="Zipcode">Zipcode</label>
+                                    <span asp-validation-for="Zipcode" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="submit" class="btn btn-primary">Update</button>
+                            <button type="button" class="btn btn-outline-primary" id="cancelButton">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+
+        function showToastrWarning(message) {
+            if (typeof toastr !== 'undefined') {
+                toastr.warning(message);
+            } else {
+                toastr.warning('Toastr missing: ' + message, 'Warning');
+            }
+        }
+
+        $("#Stateid").on('click', function () {
+            var countryId = $("#Countryid").val();
+            if (!countryId || countryId === "0") {
+                setTimeout(function () {
+                    showToastrWarning("Please select a country first.");
+                    $("#Stateid").prop("selectedIndex", 0);
+                }, 1);
+            }
+        });
+
+        $("#Cityid").on('click', function () {
+            var countryId = $("#Countryid").val();
+            var stateId = $("#Stateid").val();
+            if (!countryId || countryId === "0" || !stateId || stateId === "0") {
+                setTimeout(function () {
+                    showToastrWarning("Please select country and state first.");
+                    $("#Cityid").prop("selectedIndex", 0);
+                }, 1);
+            }
+        });
+
+        $("#Countryid").change(function () {
+            var countryId = $(this).val();
+
+            $("#Stateid").empty().append('<option value="0">-- Select State --</option>');
+            $("#Cityid").empty().append('<option value="0">-- Select City --</option>');
+
+            if (countryId && countryId !== "0") {
+                $.ajax({
+                    url: "/MyProfile/GetStatesByCountry",
+                    type: "GET",
+                    data: { countryId: countryId },
+                    success: function (data) {
+                        if (data && data.length > 0) {
+                            $.each(data, function (index, state) {
+                                $("#Stateid").append(
+                                    '<option value="' + state.stateid + '">' + state.statename + '</option>'
+                                );
+                            });
+                        }
+                    },
+                    error: function () {
+                        showToastrWarning("Failed to load states. Please try again.");
+                    }
+                });
+            }
+        });
+
+        $("#Stateid").change(function () {
+            var stateId = $(this).val();
+            var countryId = $("#Countryid").val();
+
+            $("#Cityid").empty().append('<option value="0">-- Select City --</option>');
+
+            if (!countryId || countryId === "0") {
+                showToastrWarning("Please select a country first.");
+                $(this).val("0");
+                return;
+            }
+
+            if (stateId && stateId !== "0") {
+                $.ajax({
+                    url: "/MyProfile/GetCitiesByState",
+                    type: "GET",
+                    data: { stateId: stateId },
+                    success: function (data) {
+                        if (data && data.length > 0) {
+                            $.each(data, function (index, city) {
+                                $("#Cityid").append(
+                                    '<option value="' + city.cityid + '">' + city.cityname + '</option>'
+                                );
+                            });
+                        }
+                    },
+                    error: function () {
+                        showToastrWarning("Failed to load cities. Please try again.");
+                    }
+                });
+            }
+        });
+
+        $("#Cityid").change(function () {
+            var countryId = $("#Countryid").val();
+            var stateId = $("#Stateid").val();
+
+            if (!countryId || countryId === "0" || !stateId || stateId === "0") {
+                showToastrWarning("Please select country and state first.");
+                $(this).val("0");
+                return;
+            }
+        });
+    });
+
+    let originalValues = {};
+
+    $(document).ready(function () {
+        originalValues = {
+            firstName: $("#FirstName").val(),
+            lastName: $("#LastName").val(),
+            username: $("#Username").val(),
+            phone: $("#Phone").val(),
+            address: $("#Address").val(),
+            zipcode: $("#Zipcode").val(),
+            countryId: $("#Countryid").val(),
+            stateId: $("#Stateid").val(),
+            cityId: $("#Cityid").val()
+        };
+
+        $("#cancelButton").click(function () {
+            $("#FirstName").val(originalValues.firstName);
+            $("#LastName").val(originalValues.lastName);
+            $("#Username").val(originalValues.username);
+            $("#Phone").val(originalValues.phone);
+            $("#Address").val(originalValues.address);
+            $("#Zipcode").val(originalValues.zipcode);
+
+            $("#Countryid").val(originalValues.countryId).trigger('change');
+            setTimeout(function () {
+                $("#Stateid").val(originalValues.stateId).trigger('change');
+                setTimeout(function () {
+                    $("#Cityid").val(originalValues.cityId);
+                }, 100);
+            }, 100);
+
+            let form = $("form");
+            form.find(".text-danger").html("");
+            form.removeData("validator");
+            form.removeData("unobtrusiveValidation");
+            $.validator.unobtrusive.parse(form);
+        });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        $("#uploadImageOption").click(function (e) {
+            e.preventDefault();
+            $("#imageInput").click();
+        });
+
+        $("#imageInput").change(function () {
+            var file = this.files[0];
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    $("#displayImage").attr("src", e.target.result);
+                }
+                reader.readAsDataURL(file);
+
+                var formData = new FormData();
+                formData.append("profileImage", file);
+
+                $.ajax({
+                    url: "/MyProfile/UploadProfileImage",
+                    type: "POST",
+                    headers: {
+                        "RequestVerificationToken": $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function () {
+                        toastr.success("Profile image uploaded successfully.");
+                    },
+                    error: function () {
+                        toastr.error("Failed to upload image. Please try again.");
+                    }
+                });
+            }
+        });
+
+        $("#deleteImageOption").click(function (e) {
+            e.preventDefault();
+
+            if (confirm("Are you sure you want to delete your profile image?")) {
+                $.ajax({
+                    url: "/MyProfile/DeleteProfileImage",
+                    type: "POST",
+                    success: function (data) {
+                        if (data.success) {
+                            location.reload();
+                            toastr.success(data.message);
+                        } else {
+                            toastr.error(data.message);
+                        }
+                    },
+                    error: function () {
+                        toastr.error("Something went wrong. Please try again.");
+                    }
+                });
+            }
+        });
+    });
+</script>

@@ -1,0 +1,110 @@
+@{
+    Layout = "~/Views/Shared/_OrderAppLayout.cshtml";
+    ViewData["Title"] = "Order App KOT";
+}
+@using PizzaShop.Repository.ViewModels
+@model PaginatedList<PizzaShop.Repository.ViewModels.KOTViewModel>
+@section Styles {
+    <link rel="stylesheet" href="~/css/order-app-kot.css" />
+}
+
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-labelledby="orderDetailsModalLabel" aria-hidden="true"
+    data-order-status="">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderDetailsModalLabel">Order ID: <span id="orderId"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderItems">
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="orderActionBtn" disabled></button>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid p-4 overflow-hidden" style="overflow-y: auto;">
+    <div class="d-flex justify-content-between mb-3 d-sm-row d-column flex-wrap flex-sm-nowrap">
+        <h1 class="custom-body-text-color">KOT</h1>
+    </div>
+    <section class="bg-white mb-2">
+        <div class=" overflow-auto">
+            <ul class="nav custom-tabs  flex-nowrap d-flex border-bottom-0 d-flex list-unstyled" role="tablist"
+                style="min-width: max-content;">
+                <li class="nav-item" style="cursor: pointer;">
+                    <a class="nav-link @(ViewBag.SelectedCategoryId == 0 ? "active" : "") d-flex align-items-center category-tab"
+                        data-category-id="0">
+                        <div class="d-flex align-items-center gap-1 p-1">
+                            <div class="custom-text">All</div>
+                        </div>
+                    </a>
+                </li>
+                @foreach (var category in ViewBag.Categories)
+                {
+                    <li class="nav-item" style="cursor: pointer;">
+                        <a class="nav-link d-flex align-items-center category-tab" href="javascript:void(0);"
+                            data-category-id="@category.CategoryId">
+                            <div class="d-flex align-items-center gap-1 p-1">
+                                <div class="custom-text">@category.CategoryName</div>
+                            </div>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </section>
+    <div class="table-responsive">
+        <div class="tab-content bg-white ">
+            <div id="menu-content  " class=" p-3">
+                <div
+                    class="d-flex flex-column flex-sm-row justify-content-start align-items-start justify-content-sm-between align-items-sm-center mb-1">
+                    <h2 id="tab-heading" class="custom-body-text-color">@ViewBag.SelectedCategoryName</h2>
+
+                    <div
+                        class="d-flex flex-row flex-wrap justify-content-start align-items-start justify-content-sm-between align-items-sm-center  pagination-container">
+                        <div><button class="btn btn-primary btn-order-status">InProgress</button></div>
+                        <div><button class="btn btn-outline-primary btn-order-status">Ready</button></div>
+
+                        <div>
+                            <button id="prevPageBtn" class="pagination-link">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                    class="bi bi-chevron-left" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />
+                                </svg>
+                            </button>
+                            <button id="nextPageBtn" class="pagination-link">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                    class="bi bi-chevron-right" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <input type="hidden" id="currentPage" value="@ViewBag.PageIndex" />
+                    <input type="hidden" id="totalPages" value="@ViewBag.TotalPages" />
+                </div>
+                <div id="KOTContainer">
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/order-app-kot.js"></script>
+}

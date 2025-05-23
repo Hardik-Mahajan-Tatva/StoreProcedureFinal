@@ -1,0 +1,24 @@
+@using PizzaShop.Repository.ViewModels
+@foreach (var group in Model)
+{
+    <div class="mb-3" data-group-id="@group.ModifierGroupId" data-min="@group.MinValue" data-max="@group.MaxValue">
+        <div class="d-flex gap-1 justify-content-start align-items-center text-muted">
+            <div class="h6">@group.ModifierGroupName</div>
+            <div>(You can choose Minimum - @group.MinValue & Maximum - @group.MaxValue options)</div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 rounded">
+            @foreach (var modifier in group.ModifierItems)
+            {
+                var modifierClass = modifier.ModifierType == ModifierType.Veg ? "item-card-veg" :
+                modifier.ModifierType == ModifierType.NonVeg ? "item-card-non-veg" :
+                modifier.ModifierType == ModifierType.Vegan ? "item-card-vegan" : "";
+                <div class="border rounded-4 p-2 modifier-option modifier-card item-card @modifierClass" data-id="@modifier.ModifierItemId"
+                    data-type="@modifier.ModifierType" style="cursor:pointer; min-width: 100px;">
+                    <div class="fw-semibold">@modifier.ModifierItemName</div>
+                    <div class="text-muted">₹@modifier.Price</div>
+                </div>
+            }
+        </div>
+    </div>
+}

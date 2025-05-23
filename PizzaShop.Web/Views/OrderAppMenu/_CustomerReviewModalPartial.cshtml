@@ -1,0 +1,39 @@
+
+<div class="modal fade" id="customerReviewModal" tabindex="-1" aria-labelledby="customerReviewModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="customerReviewForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reviewModalLabel">Customer Review</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="reviewOrderId" name="OrderId" />
+
+                    @foreach (var label in new[] { "Food", "Service", "Ambience" })
+                    {
+                        <div class="mb-2 d-flex flex-row align-items-center justify-content-between">
+                            <label>@label</label>
+                            <div class="rating" data-category="@label.ToLower()">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    <span class="star" data-value="@i">&#9733;</span>
+                                }
+                            </div>
+                        </div>
+                    }
+
+
+                    <div class="form-group">
+                        <label for="Comment">Comment</label>
+                        <textarea class="form-control" id="Comment" name="Comment" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-outline-primary cancle" data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

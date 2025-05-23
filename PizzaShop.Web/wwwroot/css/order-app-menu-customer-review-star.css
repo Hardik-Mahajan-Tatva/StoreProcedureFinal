@@ -1,0 +1,14 @@
+.star {
+  font-size: 1.5rem;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s;
+  user-select: none;
+}
+
+.star.selected {
+  color: orange;
+}
+.rating {
+  display: inline-flex;
+}

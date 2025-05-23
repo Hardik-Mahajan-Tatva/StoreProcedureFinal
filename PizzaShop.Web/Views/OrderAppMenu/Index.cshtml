@@ -1,0 +1,1478 @@
+@using System.Text.Json
+@{
+    Layout = "~/Views/Shared/_OrderAppLayout.cshtml";
+    ViewData["Title"] = "Order App Menu";
+    var orderId = ViewBag.OrderId;
+    var Items = ViewBag.Items;
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/order-app-menu.css" />
+    <link rel="stylesheet" href="~/css/order-app-menu-customer-review-star.css" />
+    <link rel="stylesheet" href="~/css/order-app-menu-cusotmer-summary.css" />
+    <link rel="stylesheet" href="~/css/order-app-menu-partial.css" />
+}
+
+<div class="container-fluid px-0 ">
+    <div id="OrderAppMenuContainer">
+    </div>
+</div>
+
+<div class="modal fade" id="modifierModal" tabindex="-1" aria-labelledby="modifierModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modifierModalLabel">Item Name</h5>
+                <button type="button" class="btn-close  " data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="modifierModalBody">
+            </div>
+            <div class="modal-footer">
+                @if (orderId != null)
+                {
+                    <button class="btn btn-primary add-item-with-modifier">Add</button>
+                }
+                <button type="button" class="btn btn-secondary btn-outline-primary"
+                    data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="modalContainer"></div>
+<div id="customerReviewModalContainer"></div>
+<div class="modal fade" id="completeOrderModal" tabindex="-1" aria-labelledby="completeOrderModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="completeOrderModalLabel">Complete Order Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex flex-column align-items-center justify-content-center gap-2">
+                <div>
+                    <img src="~/images/icons/warning-icon.svg" alt="" width="30px" height="30px">
+                </div>
+                <div>Are you sure you want to complete the order?</div>
+            </div>
+            <div class="modal-footer d-flex align-items-center justify-content-center">
+                <button type="button" class="btn btn-primary" id="confirmCompleteOrder">YES</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">NO</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cancelOrderModalLabel">Cancel Order Confirmation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body d-flex flex-column align-items-center justify-content-center gap-2">
+                <div>
+                    <img src="~/images/icons/warning-icon.svg" alt="" width="30px" height="30px">
+                </div>
+                <div>Are you sure you want to cancel the order?</div>
+            </div>
+            <div class="modal-footer d-flex align-items-center justify-content-center">
+                <button type="button" class="btn btn-primary" id="confirmCancelOrder">YES</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">NO</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        const orderId = '@orderId';
+        loadMenu(orderId);
+    });
+    function loadMenu(orderId) {
+        $.ajax({
+            url: '@Url.Action("GetMenu", "OrderAppMenu")',
+            type: 'GET',
+            data: { orderId: orderId },
+            success: function (data) {
+                $('#OrderAppMenuContainer').html(data);
+
+                initializeMenuEventHandlers();
+                if (orderId) {
+                    $.ajax({
+                        url: '/OrderAppMenu/LoadCustomerSummary',
+                        type: 'GET',
+                        data: { orderId: orderId },
+                        success: function (response) {
+                            $('#customer-summary-container').html(response);
+                            initializeCustomerSummaryHandlers();
+                            // loadTaxesWithMappings(orderId);
+                        },
+                        error: function (xhr, status, error) {
+                            $('#customer-summary-container').html('<p class="text-danger">Failed to load customer summary.</p>');
+                        }
+                    });
+                }
+                $('.menu-item-card').each(function () {
+                    const itemType = $(this).data('type');
+                    if (itemType === 'Veg') {
+                        $(this).addClass('item-card-veg');
+                    } else if (itemType === 'Non-Veg') {
+                        $(this).addClass('item-card-non-veg');
+                    } else if (itemType === 'Vegan') {
+                        $(this).addClass('item-card-vegan');
+                    }
+                });
+            },
+            error: function () {
+                toastr.error("Failed to load menu view.");
+            }
+        });
+    }
+    function initializeMenuEventHandlers() {
+        $('.category-sidebar .list-group-item').click(function () {
+            $('.category-sidebar .list-group-item').removeClass('active');
+            $(this).addClass('active');
+
+            const category = $(this).data('category');
+            if (category === 'All') {
+                $('.menu-item').show();
+            } else if (category === 'favorite') {
+                $('.menu-item').hide();
+                $('.menu-item[data-favorite="True"]').show();
+            } else {
+                $('.menu-item').hide();
+                $(`.menu-item.${category}`).show();
+            }
+        });
+
+        $('.diet-filter .btn').click(function () {
+            $(this).toggleClass('active');
+            applyFilters();
+        });
+
+        $('#searchMenu').on('keyup', function () {
+            applyFilters();
+        });
+    }
+
+    function applyFilters() {
+        const searchText = $('#searchMenu').val().toLowerCase();
+        const activeCategory = $('.category-sidebar .list-group-item.active').data('category');
+
+        const activeDietFilters = [];
+        $('.diet-filter .btn.active').each(function () {
+            activeDietFilters.push($(this).data('filter'));
+        });
+
+
+        $('.menu-item').each(function () {
+            const $item = $(this);
+            const itemName = $item.find('.item-name').text().toLowerCase();
+            const matchesSearch = itemName.includes(searchText);
+            const matchesCategory = (activeCategory === 'All') || $item.hasClass(activeCategory);
+
+            let matchesDiet = false;
+            if (activeDietFilters.length === 0) {
+                matchesDiet = true;
+            } else {
+                for (const dietType of activeDietFilters) {
+                    if ($item.hasClass(dietType)) {
+                        matchesDiet = true;
+                        break;
+                    }
+                }
+            }
+
+            if (matchesSearch) {
+                $item.show();
+            } else {
+                $item.hide();
+            }
+        });
+    }
+
+    let selectedItems = [];
+    let allTaxes = [];
+
+
+    $(document).on('click', '.menu-item', function () {
+        const itemId = $(this).data('id');
+        const itemName = $(this).data('name');
+        const itemPrice = $(this).data('price');
+
+        $.ajax({
+            url: '@Url.Action("GetItemModifiers", "OrderAppMenu")',
+            type: 'GET',
+            data: { itemId: itemId },
+            success: function (html) {
+                if (html.trim() === "") {
+                    $('#modifierModalBody').html("<p>No Modifiers Available</p>");
+                } else {
+                    $('#modifierModalBody').html(html);
+                }
+                $('#modifierModalLabel').text(itemName);
+                $('#modifierModalBody').data('item-id', itemId);
+                $('#modifierModalBody').data('item-price', itemPrice);
+                $('#modifierModal').modal('show');
+            },
+            error: function () {
+                toastr.error("Failed to load modifiers.");
+                $('#modifierModalBody').html("<p>Unable to load modifiers at this time.</p>");
+                $('#modifierModalLabel').text(itemName);
+                $('#modifierModal').modal('show');
+            }
+        });
+    });
+
+    $(document).on('click', '.modifier-option', function () {
+        $(this).toggleClass('selected');
+    });
+
+    $(document).on('click', '#modifierModal .add-item-with-modifier', function () {
+        const selectedModifiers = [];
+        let isValid = true;
+
+        $('#modifierModalBody .mb-3[data-group-id]').each(function () {
+            const groupId = $(this).data('group-id');
+            const min = $(this).data('min');
+            const max = $(this).data('max');
+
+            const selectedCount = $(this).find('.modifier-option.selected').length;
+
+            if (selectedCount < min) {
+                toastr.error(`Please select the modifiers as per the constraint.`);
+                isValid = false;
+                return false;
+            }
+
+            if (selectedCount > max) {
+                toastr.error(`Please select the modifiers as per the constraint.`);
+                isValid = false;
+                return false;
+            }
+        });
+
+        if (!isValid) {
+            return;
+        }
+
+        $('#modifierModalBody .modifier-option.selected').each(function () {
+            const modifierId = $(this).data('id');
+            const modifierName = $(this).find('.fw-semibold').text();
+            const modifierPrice = parseFloat($(this).find('.text-muted').text().replace('₹', '').trim()); // Parse as float
+
+            selectedModifiers.push({
+                modifierId: modifierId,
+                modifierName: modifierName,
+                price: modifierPrice
+            });
+
+        });
+
+        const itemId = $('#modifierModalBody').data('item-id');
+        const itemPrice = $('#modifierModalBody').data('item-price');
+        const itemName = $('#modifierModalLabel').text();
+
+        addItemToCustomerSummary(itemId, itemPrice, itemName, selectedModifiers);
+
+        $('#modifierModal').modal('hide');
+    });
+
+    function addItemToCustomerSummary(itemId, itemPrice, itemName, modifiers) {
+        modifiers = modifiers || [];
+
+        const itemKey = generateItemKey(itemId, modifiers);
+
+        let matchedItem = selectedItems.find(item => item.key === itemKey);
+
+        if (matchedItem) {
+            matchedItem.quantity += 1;
+            matchedItem.modifiers.forEach((mod, index) => {
+                mod.quantity += modifiers[index]?.quantity || 1;
+            });
+            updateItemUI(matchedItem);
+        } else {
+            const newItem = {
+                itemId: itemId,
+                key: itemKey,
+                name: itemName,
+                modifiers: modifiers.map(mod => ({
+                    modifierId: mod.modifierId,
+                    name: mod.modifierName,
+                    price: mod.price,
+                    quantity: mod.quantity || 1
+                })),
+                quantity: 1,
+                unitPrice: parseFloat(itemPrice) || 0
+            };
+
+            selectedItems.push(newItem);
+            appendNewItemUI(newItem);
+        }
+        updateTotals();
+        loadTaxes();
+    }
+
+    function generateItemKey(itemId, modifiers) {
+
+        if (!modifiers || modifiers.length === 0) {
+            return `${itemId}-nomods`;
+        }
+
+        const modifierIds = modifiers
+            .map(mod => mod.modifierId)
+            .filter(id => id !== undefined && id !== null)
+            .map(id => id.toString());
+
+        const sortedModifierIds = modifierIds.sort().join('_');
+
+        const finalKey = `${itemId}-mods-${sortedModifierIds}`;
+        return finalKey;
+    }
+    function updateItemUI(item) {
+
+        const unitPrice = parseFloat(item.unitPrice) || 0;
+
+        const modifiersTotal = item.modifiers.reduce((total, mod) => {
+            const modPrice = parseFloat(mod.price || mod.rate) || 0;
+            const modQuantity = parseInt(mod.quantity) || 0;
+            return total + modPrice * modQuantity;
+        }, 0);
+
+        const totalPrice = (item.unitPrice * item.quantity) + modifiersTotal;
+
+
+
+        $(`#item-${item.key} .quantity-box span`).text(item.quantity);
+
+        $(`#item-${item.key} .item-price`).text(`₹${totalPrice.toFixed(2)}`);
+
+        if (modifiersTotal > 0) {
+            if ($(`#item-${item.key} .text-muted`).length === 0) {
+                $(`#item-${item.key} .item-price`).after(`<div class="text-muted">₹${modifiersTotal.toFixed(2)}</div>`);
+            } else {
+                $(`#item-${item.key} .text-muted`).text(`₹${modifiersTotal.toFixed(2)}`);
+            }
+        } else {
+            $(`#item-${item.key} .text-muted`).remove();
+        }
+
+        const modifiersHtml = item.modifiers.map(mod => `
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <span class="me-2">•</span>
+                <span>${mod.name || mod.modifiername}</span> <!-- Handle both 'name' and 'modifiername' -->
+            </div>
+            <div>₹${((parseFloat(mod.price || mod.rate) || 0) * (parseInt(mod.quantity) || 0)).toFixed(2)}</div>
+        </div>
+    `).join('');
+        $(`#item-${item.key} .accordion-body`).html(modifiersHtml);
+    }
+
+    function appendNewItemUI(item) {
+
+        if (!item.itemId) {
+            return;
+        }
+
+        const modifiersTotal = item.modifiers.reduce((total, mod) => {
+            const modPrice = parseFloat(mod.price || mod.rate) || 0;
+            const modQuantity = parseInt(mod.quantity) || 1;
+            return total + (modPrice * modQuantity);
+        }, 0);
+
+        const itemBase = item.unitPrice * item.quantity;
+
+        const totalPrice = itemBase + modifiersTotal;
+
+
+        const newItemHtml = `
+    <div class="accordion-item border mb-2 p-1 order-item" id="item-${item.key}" data-item-id="${item.itemId}" 
+         data-item-base="${itemBase}" 
+         data-modifiers-total="${modifiersTotal}"
+         data-total-price="${totalPrice}"
+         data-item-key ="${item.key}">
+        <div class="row align-items-center g-0">
+            <div class="col-md-5 text-truncate">
+                <h2 class="accordion-header" id="heading-${item.key}">
+                    <button class="accordion-button collapsed py-2 px-1" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapse-${item.key}" aria-expanded="false" aria-controls="collapse-${item.key}">
+                        <span class="fw-bold">${item.name}</span>
+                    </button>
+                </h2>
+            </div>
+            <div class="col-md-3 text-center d-flex justify-content-center align-items-center">
+                <div class="quantity-box w-75 d-flex justify-content-center align-items-center">
+                    <button class="decrease-quantity btn btn-sm btn-outline-secondary" data-item-key="${item.key}">-</button>
+                    <span class="mx-2">${item.quantity}</span>
+                    <button class="increase-quantity btn btn-sm btn-outline-secondary" data-item-key="${item.key}">+</button>
+                </div>
+            </div>
+            <div class="col-md-2 text-end">
+                <div class="item-price fw-bold">₹${itemBase.toFixed(2)}</div>
+                ${modifiersTotal > 0 ? `<div class="text-muted">₹${modifiersTotal.toFixed(2)}</div>` : ''}
+            </div>
+            <div class="col-md-2 text-end">
+                <button class="btn  remove-item-btn" data-item-key="${item.key}">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+        </div>
+        <div id="collapse-${item.key}" class="accordion-collapse collapse" aria-labelledby="heading-${item.key}">
+            <div class="accordion-body py-2">
+                ${item.modifiers.map(mod => `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <span class="me-2">•</span>
+                            <span>${mod.name}</span>
+                        </div>
+                        <div>₹${((parseFloat(mod.price) || 0) * (parseInt(mod.quantity) || 1)).toFixed(2)}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    </div>
+    `;
+        $('#foodAccordion').append(newItemHtml);
+
+        recalculateSubtotal();
+    }
+    $(document).on('click', '.increase-quantity', function () {
+        const itemKey = $(this).data('item-key');
+        const item = selectedItems.find(item => item.key === itemKey);
+        if (item) {
+            item.quantity += 1;
+            item.modifiers.forEach(mod => mod.quantity += 1);
+            updateItemUI(item);
+            recalculateSubtotal();
+            updateTotals();
+            // loadTaxes();
+            loadTaxesWithMappings(orderId);
+
+        }
+    });
+
+
+    $(document).on('click', '.decrease-quantity', function () {
+        const itemKey = $(this).data('item-key');
+        const item = selectedItems.find(item => item.key === itemKey);
+
+        if (item) {
+            const readyQuantity = parseInt($(`#item-${itemKey}`).data('ready-quantity')) || 0;
+
+            if (item.quantity > readyQuantity) {
+                item.quantity -= 1;
+                item.modifiers.forEach(mod => mod.quantity -= 1);
+                updateItemUI(item);
+                recalculateSubtotal();
+                updateTotals();
+                // loadTaxes();
+                loadTaxesWithMappings(orderId);
+            } else {
+                toastr.warning("Quantity cannot be decreased below the ready quantity.");
+            }
+        }
+    });
+
+    $(document).on('click', '.remove-item-btn', function () {
+        const itemKey = $(this).data('item-key');
+        const itemId = $(this).data('item-id');
+        const readyQuantity = $(this).data('readyQuantity');
+
+        if (readyQuantity > 0) {
+            toastr.error("Item cannot be deleted because it has already been prepared.");
+            return;
+        }
+
+        selectedItems = selectedItems.filter(item => item.key !== itemKey);
+
+        $(`#item-${itemKey}`).remove();
+
+        updateTotals();
+        recalculatePercentageTaxes();
+        // loadTaxes();
+        loadTaxesWithMappings(orderId);
+    });
+
+
+
+    function initializeCustomerSummaryHandlers() {
+        fetchOrderedItems();
+
+        function fetchOrderedItems() {
+            const orderId = '@orderId';
+            $.ajax({
+                url: '/OrderAppMenu/GetOrderedItems',
+                type: 'GET',
+                data: { orderId: orderId },
+                success: function (response) {
+
+                    selectedItems = response;
+                    renderOrderedItems();
+                    updateTotals();
+                    // loadTaxes();
+                    loadTaxesWithMappings(orderId);
+                },
+                error: function () {
+                    toastr.error('Failed to fetch ordered items.');
+                }
+            });
+        }
+
+        function renderOrderedItems() {
+            $('#foodAccordion').empty();
+            selectedItems.forEach(item => {
+                appendOldItemToUI(item);
+            });
+        }
+
+        // updateTotals();
+        updateGrandTotal();
+        // loadTaxes();
+        // loadTaxesWithMappings(orderId);
+    }
+
+    function appendOldItemToUI(item) {
+
+        const itemKey = generateItemKey(item.itemId, item.modifiers);
+        item.key = itemKey;
+
+        if (!selectedItems.find(existingItem => existingItem.key === itemKey)) {
+            selectedItems.push(item);
+        }
+
+        const associatedModifiers = (item.modifiers || []).filter(mod => mod.ordereditemid === item.orderItemId);
+
+        const modifiersTotal = associatedModifiers.reduce((total, mod) => {
+            const modRate = parseFloat(mod.rate) || 0;
+            const modQuantity = parseInt(mod.quantity) || 0;
+            return total + (modRate * modQuantity);
+        }, 0);
+
+        const totalPrice = (item.unitPrice * item.quantity);
+
+        if ($(`#item-${itemKey}`).length > 0) {
+            return;
+        }
+
+        const oldItemHtml = `
+        <div class="accordion-item border mb-2 p-1 order-item" id="item-${itemKey}" data-item-id="${item.itemId}" 
+           data-quantity="${item.quantity}" 
+     data-ready-quantity="${item.readyQuantity}"
+     data-item-key ="${item.key}">
+            <div class="row align-items-center g-0">
+                <div class="col-md-5 text-truncate item-accordion-button">
+                    <h2 class="accordion-header" id="heading-${itemKey}" data-order-item-id="${item.orderItemId}" data-order-id="${item.orderId}">
+                        <button class="accordion-button collapsed py-2 px-1" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapse-${itemKey}" aria-expanded="false" aria-controls="collapse-${itemKey}">
+                            <span class="fw-bold">${item.itemName}</span>
+                        </button>
+                    </h2>
+                </div>
+                <div class="col-md-3 text-center d-flex justify-content-center align-items-center increase-qty decrease-qty">
+                    <div class="quantity-box w-75 d-flex justify-content-center align-items-center">
+                        <button class="decrease-quantity btn btn-sm btn-outline-secondary" data-item-key="${itemKey}">-</button>
+                        <span class="mx-2">${item.quantity}</span>
+                        <button class="increase-quantity btn btn-sm btn-outline-secondary" data-item-key="${itemKey}">+</button>
+                    </div>
+                </div>
+                <div class="col-md-2 text-end ">
+                    <div class="fw-bold item-price">₹${totalPrice.toFixed(2)}</div>
+                    ${modifiersTotal > 0 ? `<div class="text-muted">₹${modifiersTotal.toFixed(2)}</div>` : ''}
+                </div>
+                <div class="col-md-2 text-end remove-saved-item">
+                    <button class="btn  remove-item-btn" 
+    data-item-key="${itemKey}" 
+    data-item-id="${item.itemId}" 
+    data-ready-quantity="${item.readyQuantity}">
+    <i class="bi bi-trash"></i>
+    </button>
+    
+                </div>
+            </div>
+            <div id="collapse-${itemKey}" class="accordion-collapse collapse" aria-labelledby="heading-${itemKey}">
+                <div class="accordion-body py-2">
+                    ${associatedModifiers.map(mod => `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <span class="me-2">•</span>
+                                <span>${mod.modifiername}</span>
+                            </div>
+                            <div>₹${(mod.rate).toFixed(2)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+
+        $('#foodAccordion').append(oldItemHtml);
+
+
+    }
+    function updateTotals() {
+        if (!Array.isArray(selectedItems) || selectedItems.length === 0) {
+            $('#subTotal').text(formatCurrency(0));
+            return;
+        }
+
+        let subTotal = 0;
+
+        selectedItems.forEach(item => {
+            const itemPrice = (item.unitPrice || 0) * (item.quantity || 1);
+
+            const modifiersTotal = Array.isArray(item.modifiers)
+                ? item.modifiers.reduce((total, mod) => {
+                    const modPrice = parseFloat(mod.price || mod.rate) || 0;
+                    const modQuantity = parseInt(mod.quantity) || 1;
+                    return total + (modPrice * modQuantity);
+                }, 0)
+                : 0;
+
+            const itemTotal = itemPrice + modifiersTotal;
+            subTotal += itemTotal;
+
+        });
+
+        $('#subTotal').text(formatCurrency(subTotal));
+
+        const cgst = subTotal * 0.12;
+        const sgst = subTotal * 0.06;
+
+        $('#cgst').text(formatCurrency(cgst));
+        $('#sgst').text(formatCurrency(sgst));
+
+        fetchItemSpecificTaxesAndUpdateTotals();
+    }
+
+    function loadTaxes() {
+        $.ajax({
+            url: '/TaxesAndFees/GetEnabledTaxes',
+            method: 'GET',
+            success: function (taxes) {
+                let percentageTaxesHtml = '';
+                let flatTaxesHtml = '';
+                let subtotal = parseFloat($('#subTotal').text().replace('₹', '')) || 0;
+
+                taxes.forEach(tax => {
+                    if (tax.taxType === 'Percentage') {
+                        let taxAmount = (subtotal * tax.amount) / 100;
+                        percentageTaxesHtml += `
+        <div class="row percentage-tax-row" data-tax-id="${tax.taxId}" data-tax-name="${tax.taxName}">
+            <div class="col-6">${tax.taxName} (${tax.amount}%)</div>
+            <div class="col-6 text-end" id="tax_${tax.taxName}">${formatCurrency(taxAmount)}</div>
+        </div>
+    `;
+                    }
+
+                    else if (tax.taxType === 'Flat Amount') {
+                        flatTaxesHtml += `
+                        <div class="row">
+                            <div class="col-6 d-flex align-items-center">
+                                <input type="checkbox" 
+                                       class="flat-tax-checkbox me-1" 
+                                       data-tax-id="${tax.taxId}" 
+                                       data-tax-amount="${tax.amount}" />
+                                ${tax.taxName} (₹${tax.amount})
+                            </div>
+                            <div class="col-6 text-end flat-tax-amount" style="visibility: hidden;">
+                                ${formatCurrency(tax.amount)}
+                            </div>
+                        </div>
+                    `;
+                    }
+                });
+
+                $('#taxesContainer').html(percentageTaxesHtml + flatTaxesHtml);
+                updateGrandTotal();
+            }
+        });
+    }
+
+    $(document).on('change', '.flat-tax-checkbox', function () {
+        let amount = parseFloat($(this).data('tax-amount')) || 0;
+        let taxAmountDiv = $(this).closest('.row').find('.flat-tax-amount');
+
+        if ($(this).is(':checked')) {
+            taxAmountDiv.css('visibility', 'visible');
+        } else {
+            taxAmountDiv.css('visibility', 'hidden');
+        }
+
+        updateGrandTotal();
+    });
+
+    function updateGrandTotal() {
+        let subtotal = parseFloat($('#subTotal').text().replace('₹', '')) || 0;
+
+        let totalTaxes = 0;
+
+        $('#taxesContainer .text-end[id^="tax_"]').each(function () {
+            let taxAmount = parseFloat($(this).text().replace('₹', '')) || 0;
+            totalTaxes += taxAmount;
+        });
+
+        $('.flat-tax-checkbox:checked').each(function () {
+            let flatAmount = parseFloat($(this).data('tax-amount')) || 0;
+            totalTaxes += flatAmount;
+        });
+
+        let otherTax = parseFloat($('#otherTax').text().replace('₹', '')) || 0;
+        totalTaxes += otherTax;
+
+
+        let grandTotal = subtotal + totalTaxes;
+        $('#grandTotal').text(formatCurrency(grandTotal));
+    }
+
+
+    function formatCurrency(value) {
+        return '₹' + value.toFixed(2);
+    }
+
+    function attachFlatTaxListeners() {
+        $('.flat-tax-checkbox').off('change').on('change', function () {
+            const taxName = $(this).val();
+            const amount = parseFloat($(this).data('amount')) || 0;
+
+            if ($(this).is(':checked')) {
+                if (!selectedFlatTaxes.includes(taxName)) {
+                    selectedFlatTaxes.push(taxName);
+                }
+            } else {
+                selectedFlatTaxes = selectedFlatTaxes.filter(name => name !== taxName);
+            }
+        });
+    }
+
+    function fetchItemSpecificTaxesAndUpdateTotals() {
+        if (!Array.isArray(selectedItems) || selectedItems.length === 0) {
+            return;
+        }
+
+        const itemIds = selectedItems.map(item => item.itemId);
+
+        $.ajax({
+            url: '/TaxesAndFees/GetItemSpecificTaxes',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(itemIds),
+            success: function (taxData) {
+
+                let totalOtherTax = 0;
+                let otherTaxBreakdown = [];
+
+                if (Array.isArray(taxData)) {
+                    taxData.forEach(tax => {
+                        const matchingItem = selectedItems.find(i => i.itemId === tax.itemId);
+                        if (matchingItem) {
+                            const modifiersTotal = Array.isArray(matchingItem.modifiers)
+                                ? matchingItem.modifiers.reduce((total, mod) => total + (mod.rate || 0), 0)
+                                : 0;
+
+                            const itemTotal = ((matchingItem.unitPrice || 0)) * (matchingItem.quantity || 1);
+                            const taxAmount = (itemTotal * (parseFloat(tax.percentage) || 0)) / 100;
+
+                            totalOtherTax += taxAmount;
+                            otherTaxBreakdown.push({
+                                itemId: matchingItem.itemId,
+                                itemTotal: itemTotal,
+                                taxPercentage: tax.percentage,
+                                taxAmount: taxAmount
+                            });
+                        }
+                    });
+                }
+
+                if (totalOtherTax > 0) {
+                    $('#otherTax').text(formatCurrency(totalOtherTax));
+                    $('#otherTaxRow').show();
+                } else {
+                    $('#otherTaxRow').hide();
+                }
+
+
+                updateGrandTotal();
+
+            },
+            error: function (xhr) {
+                toastr.error("Error fetching item-specific taxes", xhr);
+            }
+        });
+    }
+
+    function updateTotalsWithExternalOtherTax(otherTax) {
+        const subTotal = parseFloat($('#subTotal').text().replace('₹', '')) || 0;
+        const cgst = parseFloat($('#cgst').text().replace('₹', '')) || 0;
+        const sgst = parseFloat($('#sgst').text().replace('₹', '')) || 0;
+
+        let totalTaxes = cgst + sgst;
+
+        $('.flat-tax-checkbox:checked').each(function () {
+            let flatAmount = parseFloat($(this).data('tax-amount')) || 0;
+            totalTaxes += flatAmount;
+        });
+
+        const grandTotal = subTotal + totalTaxes;
+        $('#grandTotal').text(formatCurrency(grandTotal));
+    }
+
+    // Handle the "Add to Database" button click
+    $(document).on('click', '.add-item-with-modifier-to-database', function () {
+        const selectedTaxes = [];
+
+        const cgst = parseFloat($('#cgst').text().replace('₹', '')) || 0;
+        const sgst = parseFloat($('#sgst').text().replace('₹', '')) || 0;
+
+        if (cgst > 0) {
+            selectedTaxes.push({ taxId: 1, taxName: 'CGST', taxValue: cgst });
+        }
+        if (sgst > 0) {
+            selectedTaxes.push({ taxId: 2, taxName: 'SGST', taxValue: sgst });
+        }
+
+        $('#taxesContainer .percentage-tax-row').each(function () {
+            const taxId = $(this).data('tax-id');
+            const taxName = $(this).data('tax-name');
+            const taxValue = parseFloat($(this).find('.text-end').text().replace('₹', '')) || 0;
+
+            if (taxValue > 0) {
+                selectedTaxes.push({ taxId: taxId, taxName: taxName, taxValue: taxValue });
+            }
+        });
+
+
+        $('.flat-tax-checkbox:checked').each(function () {
+            const taxId = $(this).data('tax-id');
+            const taxName = $(this).parent().text().trim();
+            const taxValue = parseFloat($(this).data('tax-amount')) || 0;
+            selectedTaxes.push({ taxId: taxId, taxName: taxName, taxValue: taxValue });
+        });
+
+        const otherTaxValue = parseFloat($('#otherTax').text().replace('₹', '')) || 0;
+        if (otherTaxValue > 0) {
+            selectedTaxes.push({ taxId: 0, taxName: 'Other Tax', taxValue: otherTaxValue });
+        }
+
+        const selectedPaymentMethod = $('input[name="paymentMethod"]:checked').val();
+
+        if (!selectedPaymentMethod) {
+            toastr.warning("Please select a payment method.");
+            return;
+        }
+
+        const orderData = {
+            orderId: '@orderId',
+            items: selectedItems.map(item => ({
+                itemId: item.itemId,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                modifiers: item.modifiers.map(mod => ({
+                    orderId: '@orderId',
+                    modifierId: mod.modifierId,
+                    price: mod.rate,
+                    quantity: mod.quantity,
+                }))
+            })),
+            taxes: selectedTaxes,
+            subAmount: parseFloat($('#subTotal').text().replace('₹', '')) || 0,
+            discount: 0,
+            totalTax: selectedTaxes.reduce((sum, tax) => sum + tax.taxValue, 0),
+            totalAmount: parseFloat($('#grandTotal').text().replace('₹', '')) || 0,
+            PaymentMethod: selectedPaymentMethod
+        };
+
+        $.ajax({
+            type: 'POST',
+            url: '/OrderAppMenu/SaveOrder',
+            contentType: 'application/json',
+            data: JSON.stringify(orderData),
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                } else {
+                    toastr.warning(response.message || 'Failed to save the order.');
+                }
+            },
+            error: function () {
+                toastr.warning('An unexpected error occurred while saving the order.');
+            }
+        });
+    });
+
+
+
+    // Customer Detail Modal Handle
+    $(document).on("click", ".edit-customer-btn", function () {
+        var customerId = $(this).data("customer-id");
+        const totalTableCapacity = $('#totalTableCapacity').val();
+
+        $.ajax({
+            type: "GET",
+            url: "/OrderAppMenu/LoadCustomerDetailsModal",
+            data: { customerId: customerId },
+            success: function (response) {
+                $("#modalContainer").empty();
+                $("#modalContainer").html(response);
+                $('#totalTableCapacityInput').val(totalTableCapacity);
+                let editCustomerModal = document.getElementById("customerDetailsModal");
+                let editCustomerModalInstance = new bootstrap.Modal(editCustomerModal);
+                editCustomerModalInstance.show();
+            },
+            error: function (xhr, status, error) {
+                toastr.error("Failed to load customer details.");
+            }
+        });
+    });
+
+    // Submit Customer Detail Form via AJAX
+    $(document).on("submit", "#customerDetailsForm", function (e) {
+        e.preventDefault();
+
+        const totalTableCapacity = parseInt($('#totalTableCapacityInput').val()) || 0;
+        const noOfPersons = parseInt($('#numberOfPersons').val()) || 0;
+
+        if (noOfPersons > totalTableCapacity) {
+            toastr.error("The number of persons exceeds the total capacity of the assigned tables.");
+            return;
+        }
+
+        const form = $(this)[0];
+        const formData = new FormData(form);
+
+        $.ajax({
+            type: "POST",
+            url: "/OrderAppMenu/EditCustomer",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.success) {
+                    toastr.success(response.message);
+                    let editCustomerModal = document.getElementById("customerDetailsModal");
+                    let modalInstance = bootstrap.Modal.getOrCreateInstance(editCustomerModal);
+                    modalInstance.hide();
+
+                } else {
+                    $("#customerDetailsForm .text-danger").text("");
+                    if (response.errors) {
+                        for (const key in response.errors) {
+                            const errorMessages = response.errors[key].join(", ");
+                            $(`[name="${key}"]`).siblings(".text-danger").text(errorMessages);
+                        }
+                    }
+                }
+            },
+            error: function () {
+                toastr.error("An unexpected error occurred.");
+            }
+        });
+    });
+
+    function loadTaxesWithMappings(orderId) {
+        $.ajax({
+            type: 'GET',
+            url: '/OrderAppMenu/GetTaxMapping',
+            data: { orderId: orderId },
+            success: function (response) {
+                if (response.success && response.taxMappings && response.taxMappings.length > 0) {
+                    renderTaxes(response.taxMappings);
+                } else {
+                    loadTaxes();
+                }
+            },
+            error: function () {
+                loadTaxes();
+            }
+        });
+    }
+    function renderTaxes(taxMappings) {
+        $.ajax({
+            url: '/TaxesAndFees/GetEnabledTaxes',
+            method: 'GET',
+            success: function (taxes) {
+                allTaxes = taxes;
+
+                let percentageTaxesHtml = '';
+                let flatTaxesHtml = '';
+                let subtotal = parseFloat($('#subTotal').text().replace('₹', '')) || 0;
+                taxes.forEach(tax => {
+                    const mapping = taxMappings.find(m => m.taxId === tax.taxId);
+                    const isChecked = !!mapping;
+
+                    if (tax.taxType === 'Percentage') {
+                        let taxAmount = mapping ? mapping.taxValue : (subtotal * tax.amount) / 100;
+
+                        percentageTaxesHtml += `
+                        <div class="row percentage-tax-row" data-tax-id="${tax.taxId}" data-tax-name="${tax.taxName}">
+                            <div class="col-6">${tax.taxName} (${tax.amount}%)</div>
+                            <div class="col-6 text-end" id="tax_${tax.taxName}">
+                                ${formatCurrency(taxAmount)}
+                            </div>
+                        </div>
+                    `;
+                    } else if (tax.taxType === 'Flat Amount') {
+                        flatTaxesHtml += `
+                        <div class="row">
+                            <div class="col-6 d-flex align-items-center">
+                                <input type="checkbox" 
+                                       class="flat-tax-checkbox me-1" 
+                                       data-tax-id="${tax.taxId}" 
+                                       data-tax-amount="${tax.amount}" 
+                                       ${isChecked ? 'checked' : ''}  />
+                                ${tax.taxName} (₹${tax.amount})
+                            </div>
+                            <div class="col-6 text-end flat-tax-amount">
+                                ${formatCurrency(isChecked ? tax.amount : 0)}
+                            </div>
+                        </div>
+                    `;
+                    }
+                });
+
+                $('#taxesContainer').html(percentageTaxesHtml + flatTaxesHtml);
+                updateGrandTotal();
+            }
+        });
+    }
+    function recalculatePercentageTaxes() {
+        const subtotal = parseFloat($('#subTotal').text().replace('₹', '')) || 0;
+        allTaxes.forEach(tax => {
+            if (tax.taxType === 'Percentage') {
+                const taxAmount = (subtotal * tax.amount) / 100;
+                $(`#tax_${tax.taxName}`).text(formatCurrency(taxAmount));
+            }
+        });
+        updateGrandTotal();
+    }
+    function recalculateSubtotal() {
+        let subtotal = 0;
+
+        selectedItems.forEach(item => {
+            const itemPrice = (item.unitPrice || 0) * (item.quantity || 1);
+
+            const modifiersTotal = Array.isArray(item.modifiers)
+                ? item.modifiers.reduce((total, mod) => {
+                    const modPrice = parseFloat(mod.price || mod.rate) || 0;
+                    const modQuantity = parseInt(mod.quantity) || 1;
+                    return total + (modPrice * modQuantity);
+                }, 0)
+                : 0;
+
+            subtotal += itemPrice + modifiersTotal;
+
+        });
+
+        $('#subTotal').text("₹" + subtotal.toFixed(2));
+
+        recalculatePercentageTaxes();
+    }
+
+    function displayTaxMappings(taxMappingsFromDb) {
+        $.ajax({
+            url: '/TaxesAndFees/GetEnabledTaxes',
+            method: 'GET',
+            success: function (enabledTaxes) {
+                let percentageTaxesHtml = '';
+                let flatTaxesHtml = '';
+
+                enabledTaxes.forEach(tax => {
+                    const mapping = taxMappingsFromDb.find(m => m.taxId === tax.taxId);
+                    const isChecked = mapping && tax.taxType === 'Flat Amount';
+
+                    if (tax.taxType === 'Percentage') {
+                        let taxAmount = mapping ? mapping.amount : 0;
+                        percentageTaxesHtml += `
+                        <div class="row percentage-tax-row" data-tax-id="${tax.taxId}">
+                            <div class="col-6">${tax.taxName}</div>
+                            <div class="col-6 text-end">${formatCurrency(taxAmount)}</div>
+                        </div>
+                    `;
+                    } else if (tax.taxType === 'Flat Amount') {
+                        flatTaxesHtml += `
+                        <div class="row">
+                            <div class="col-6 d-flex align-items-center">
+                                <input type="checkbox" 
+                                       class="flat-tax-checkbox me-1" 
+                                       data-tax-id="${tax.taxId}" 
+                                       data-tax-amount="${tax.amount}" 
+                                       ${isChecked ? 'checked' : ''} disabled />
+                                ${tax.taxName} (₹${tax.amount})
+                            </div>
+                            <div class="col-6 text-end flat-tax-amount">
+                                ${formatCurrency(isChecked ? tax.amount : 0)}
+                            </div>
+                        </div>
+                    `;
+                    }
+                });
+                $('#taxesContainer').html(percentageTaxesHtml + flatTaxesHtml);
+            }
+        });
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        const orderId = '@orderId';
+
+        $(document).on("click", ".order-comment-btn", function () {
+            const orderId = $(this).data("order-id");
+
+            $.ajax({
+                type: "GET",
+                url: "/OrderAppMenu/LoadOrderCommentModal",
+                data: { orderId: orderId },
+                success: function (response) {
+                    $("#modalContainer").html(response);
+
+                    $("#orderCommentModal").modal("show");
+                },
+                error: function () {
+                    toastr.error("Failed to load the comment modal.");
+                }
+            });
+        });
+
+        // Submit Order Comment Form via AJAX
+        $(document).on("submit", "#orderCommentForm", function (e) {
+            e.preventDefault();
+
+            const form = $(this);
+            const formData = form.serialize();
+
+            $.ajax({
+                type: "POST",
+                url: form.attr("action"),
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        $("#orderCommentModal").modal("hide");
+                    } else {
+                        $("#orderCommentForm .text-danger").text("");
+
+                        if (response.errors) {
+                            for (const key in response.errors) {
+                                const errorMessages = response.errors[key].join(", ");
+                                $(`[name="${key}"]`).siblings(".text-danger").text(errorMessages);
+                            }
+                        }
+                    }
+                },
+                error: function () {
+                    toastr.error("An unexpected error occurred.");
+                }
+            });
+        });
+
+        // Special Instruction Modal
+        $(document).on("click", ".accordion-header", function (event) {
+            const $header = $(this);
+            const orderId = $header.data("order-id");
+            const orderedItemId = $header.data("order-item-id");
+
+            const offset = $header.offset();
+            const width = $header.outerWidth();
+
+            const clickX = event.pageX - offset.left;
+
+            const triggerAreaStart = width * 0.7;
+            const triggerAreaEnd = width * 0.9;
+
+
+            if (clickX >= triggerAreaStart && clickX <= triggerAreaEnd && orderedItemId) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+
+                // Load and show modal
+                $.ajax({
+                    type: "GET",
+                    url: "/OrderAppMenu/LoadSpecialInstructionModal",
+                    data: { orderId: orderId, orderedItemId: orderedItemId },
+                    success: function (response) {
+                        $("#modalContainer").html(response);
+                        $("#specialInstructionModal").modal("show");
+                    },
+                    error: function () {
+                        toastr.error("Failed to load the special instruction modal.");
+                    }
+                });
+            } else {
+                const $collapse = $header.next('.accordion-collapse');
+                if ($collapse.hasClass('show')) {
+                    $collapse.collapse('hide');
+                } else {
+                    $collapse.collapse('show');
+                }
+            }
+        });
+
+        // Submit Special Instruction Form via AJAX
+        $(document).on("submit", "#specialInstructionForm", function (e) {
+            e.preventDefault();
+
+            const form = $(this);
+            const formData = form.serialize();
+
+            $.ajax({
+                type: "POST",
+                url: form.attr("action"),
+                data: formData,
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        $("#specialInstructionModal").modal("hide");
+                    } else {
+                        $("#specialInstructionModal .text-danger").text("");
+
+                        if (response.errors) {
+                            for (const key in response.errors) {
+                                const errorMessages = response.errors[key].join(", ");
+                                $(`[name="${key}"]`).siblings(".text-danger").text(errorMessages);
+                            }
+                        }
+                    }
+                },
+                error: function () {
+                    toastr.error("An unexpected error occurred.");
+                }
+            });
+        });
+        $(document).on('click', '.wishlist-btn i', function (event) {
+            event.stopPropagation();
+
+            const icon = $(this);
+            const button = icon.closest('.wishlist-btn');
+            const item = button.closest('.menu-item');
+            const itemId = button.closest('.menu-item').data('id');
+            const isFavorite = !button.hasClass('active');
+
+            $.ajax({
+                url: '/OrderAppMenu/MarkAsFavorite',
+                type: 'POST',
+                data: { itemId: itemId, isFavorite: isFavorite },
+                success: function (response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        button.toggleClass('active');
+                        icon.toggleClass('bi-heart bi-heart-fill');
+                        item.attr('data-favorite', isFavorite ? 'True' : 'False');
+
+                        const activeCategory = $('.category-sidebar .list-group-item.active').data('category');
+                        if (activeCategory === 'favorite' && !isFavorite) {
+                            item.remove();
+                        }
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function () {
+                    toastr.error('Failed to mark item as favorite.');
+                }
+            });
+        });
+
+
+        $(document).on('click', '#completeOrderBtn', function (e) {
+            e.preventDefault();
+            let allReady = true;
+
+            $('.order-item').each(function () {
+                let totalQuantity = parseInt($(this).data('quantity'));
+                let readyQuantity = parseInt($(this).data('ready-quantity'));
+
+                if (isNaN(totalQuantity) || isNaN(readyQuantity) || readyQuantity !== totalQuantity) {
+                    allReady = false;
+                    return false;
+                }
+            });
+
+            if (!allReady) {
+                toastr.warning('Not all items are fully prepared!');
+                return;
+            }
+            $('#completeOrderModal').modal('show');
+        });
+
+        // Handle Complete Order Confirmation
+        $(document).on('click', '#confirmCompleteOrder', function () {
+            $('#completeOrderModal').modal('hide');
+
+            const selectedPaymentMethod = $('input[name="paymentMethod"]:checked').val();
+
+            if (!selectedPaymentMethod) {
+                toastr.warning("Please select a payment method.");
+                return;
+            }
+
+            let allReady = true;
+
+            $.ajax({
+                url: '/OrderAppMenu/MarkOrderComplete',
+                type: 'POST',
+                data: { orderId: orderId },
+                success: function (response) {
+                    if (response.success) {
+
+                        toastr.success('Order completed succesfully!');
+
+                        setTimeout(function () {
+                            $.ajax({
+                                url: '/OrderAppMenu/LoadCustomerReviewModal',
+                                type: 'GET',
+                                data: { orderId: orderId },
+                                success: function (modalHtml) {
+                                    $('#customerReviewModalContainer').html(modalHtml);
+                                    $('#customerReviewModal').modal('show');
+
+                                    $('#customerReviewModal').on('hidden.bs.modal', function () {
+                                        setTimeout(function () {
+                                            window.location.href = "/OrderAppTableView/Index";
+                                        }, 500);
+                                    });
+                                },
+                                error: function () {
+                                    toastr.error('Failed to load review modal.');
+                                }
+                            });
+                        }, 4000);
+                    } else {
+                        toastr.error(response.message || 'Failed to mark order complete.');
+                    }
+                },
+                error: function () {
+                    toastr.error('Something went wrong.');
+                }
+            });
+        });
+
+        let ratings = { food: 0, service: 0, ambience: 0 };
+
+        // Handle star click
+        $(document).on('click', '.star', function () {
+            const val = $(this).data('value');
+            const category = $(this).closest('.rating').data('category');
+            ratings[category] = val;
+
+            const parent = $(this).closest('.rating');
+            parent.find('.star').removeClass('selected');
+            parent.find('.star').each(function () {
+                if ($(this).data('value') <= val) {
+                    $(this).addClass('selected');
+                }
+            });
+        });
+
+        // Submit review
+        $(document).on('submit', '#customerReviewForm', function (e) {
+            e.preventDefault();
+
+            const data = {
+                orderId: '@orderId',
+                foodRating: ratings.food,
+                serviceRating: ratings.service,
+                ambienceRating: ratings.ambience,
+                comment: $('#Comment').val()
+            };
+            $.ajax({
+                url: '/OrderAppMenu/SubmitReview',
+                method: 'POST',
+                data: data,
+                success: function () {
+                    $('#customerReviewModal').modal('hide');
+                    toastr.success('Thank you for your feedback!');
+                },
+                error: function () {
+                    toastr.error('Please give valid feedback');
+                }
+            });
+        });
+
+
+
+        // Show Cancel Order Modal
+        $(document).on('click', '#cancelOrderButton', function (e) {
+            e.preventDefault();
+            let canCancelOrder = true;
+
+            $('.order-item').each(function () {
+                const readyQuantity = $(this).data('ready-quantity');
+                if (readyQuantity > 0) {
+                    canCancelOrder = false;
+                    toastr.error('Cannot cancel the order because some items are already ready.');
+                    return false;
+                }
+            });
+
+            if (canCancelOrder) {
+                $('#cancelOrderModal').modal('show');
+            }
+        });
+
+        // Handle Cancel Order Confirmation
+        $(document).on('click', '#confirmCancelOrder', function () {
+            $('#cancelOrderModal').modal('hide');
+
+            let canCancelOrder = true;
+
+            $('.order-item').each(function () {
+                const readyQuantity = $(this).data('ready-quantity');
+                if (readyQuantity > 0) {
+                    canCancelOrder = false;
+                    toastr.error('Cannot cancel the order because some items are already ready.');
+                    return false;
+                }
+            });
+
+            if (canCancelOrder) {
+                $.ajax({
+                    url: '/OrderAppMenu/CancelOrder',
+                    type: 'POST',
+                    data: { orderId: orderId },
+                    success: function (response) {
+                        if (response.success) {
+                            toastr.success('Order has been successfully canceled.');
+                            setTimeout(function () {
+                                window.location.href = "/OrderAppTableView/Index";
+                            });
+                        } else {
+                            toastr.error(response.message || 'Failed to cancel the order.');
+                        }
+                    },
+                    error: function () {
+                        toastr.error('Something went wrong while canceling the order.');
+                    }
+                });
+            }
+        });
+        $(document).on("click", "#generateInvoice", function () {
+            var orderId = '@orderId';
+
+            $.ajax({
+                url: "/Orders/downloadInvoice",
+                type: "GET",
+                data: { orderId: orderId },
+                xhrFields: {
+                    responseType: 'blob'
+                },
+                success: function (response) {
+                    var blob = new Blob([response], { type: 'application/pdf' });
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = "Invoice_" + orderId + ".pdf";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                },
+                error: function (xhr, status, error) {
+                    toastr.error("Error downloading PDF: " + error, "Download Failed");
+                }
+            });
+        });
+    });
+
+</script>
+
+@section Scripts {
+    <script src="~/js/order-app-customer-summary.js"></script>
+    <script src="~/js/order-app-customer-summary.js"></script>
+}

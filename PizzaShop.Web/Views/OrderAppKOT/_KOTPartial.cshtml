@@ -1,0 +1,58 @@
+@using PizzaShop.Repository.ViewModels
+@model PaginatedList<PizzaShop.Repository.ViewModels.KOTViewModel>
+<div class="row g-3">
+    @foreach (var kot in Model)
+    {
+        <div class="col-12 col-sm-6 col-xl-3 flex-wrap">
+            <div class="kot-card card text-center" style="cursor: pointer;" data-status="@kot.Status">
+                <div class="card-header ps-1 pe-1">
+                    <div class="d-flex justify-content-between align-items-center ps-0">
+                        <div class="text-primary fw-bold"># @kot.OrderNumber</div>
+                        <div class="elapsed-time text-muted small" data-time="@kot.CreatedAtRaw?.ToString("o")">
+                            <i class="bi bi-stopwatch"></i> calculating...
+                        </div>
+
+                    </div>
+                    @if (kot.SectionNames?.Any() == true)
+                    {
+                        <p class="mb-1 text-start">@string.Join(", ", kot.SectionNames)</p>
+                    }
+                    @if (kot.TableNames?.Any() == true)
+                    {
+                        <p class="mb-1 text-start">@string.Join(", ", kot.TableNames)</p>
+                    }
+
+                </div>
+                <div class="card-body text-muted text-start ps-1 pe-1">
+                    <ul class="list-unstyled">
+                        @foreach (var item in kot.OrderItems)
+                        {
+                            <li class="d-flex justify-content-between" data-ordereditemid="@item.OrderItemId">
+                                <div>@item.ItemName</div>
+                                <div class="text-end">@item.Quantity</div>
+                            </li>
+                            @if (item.Modifiers != null && item.Modifiers.Any())
+                            {
+                                <ul class="custom-li">
+                                    @foreach (var modifier in item.Modifiers)
+                                    {
+                                        <li class="ms-2">@modifier.Modifiername</li>
+                                    }
+                                </ul>
+                            }
+                            <span class="ms-2" style="color: #16c1fa;">
+                                Instructions:
+                            </span> @item.ItemWiseComment
+                        }
+                    </ul>
+                </div>
+                <div class="card-footer text-start ">
+                    <span style="color: #16c1fa;">
+                        Order Instructions:
+                    </span>
+                    @kot.SpecialInstructions
+                </div>
+            </div>
+        </div>
+    }
+</div>

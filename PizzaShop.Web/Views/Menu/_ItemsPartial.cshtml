@@ -1,0 +1,231 @@
+@inject PizzaShop.Service.Interfaces.IPermissionService PermissionService
+@{
+   var context = HttpContextAccessor?.HttpContext;
+   var user = context?.User;
+   var userRole = user?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+
+   var hasMenuPermissionAddEdit = false;
+   var hasMenuPermissionDelete = false;
+   if (!string.IsNullOrEmpty(userRole))
+   {
+      hasMenuPermissionAddEdit = await PermissionService.RoleHasPermissionAsync(userRole, "CanAddEdit", 3);
+      hasMenuPermissionDelete = await PermissionService.RoleHasPermissionAsync(userRole, "CanDelete", 3);
+   }
+}
+@* @{
+   var user = HttpContextAccessor.HttpContext.User;
+   var userRole = user?.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+   var hasMenuPermissionAddEdit = await PermissionService.RoleHasPermissionAsync(userRole, "CanAddEdit", 3);
+   var hasMenuPermissionDelete = await PermissionService.RoleHasPermissionAsync(userRole, "CanDelete", 3);
+} *@
+<style>
+   .tableheader {
+      font-weight: bold;
+      font-size: large;
+      color: #585b5e;
+   }
+
+   .table td,
+   .table th {
+      text-align: center;
+      vertical-align: middle;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+   }
+
+   .table td:nth-child(1),
+   .table th:nth-child(1) {
+      width: 20%;
+   }
+
+   .table td:nth-child(2),
+   .table th:nth-child(2) {
+      width: 15%;
+   }
+
+   .table td:nth-child(3),
+   .table th:nth-child(3) {
+      width: 10%;
+   }
+
+   .table td:nth-child(4),
+   .table th:nth-child(4) {
+      width: 10%;
+   }
+
+   .table td:nth-child(5),
+   .table th:nth-child(5) {
+      width: 15%;
+   }
+
+   .table td:nth-child(6),
+   .table th:nth-child(6) {
+      width: 20%;
+   }
+
+   .truncate-text {
+      text-align: start;
+      display: inline-block;
+      max-width: 190px !important;
+      min-width: 190px !important;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+   }
+
+   .no-pointer-events {
+      pointer-events: none;
+      opacity: 0.6;
+      /* optional: makes the content look disabled */
+   }
+</style>
+<div class="item-wrapper">
+   <table class="table">
+      <tr class="tableheader">
+         <td class="align-middle">
+            <div class="d-flex ">
+               <input class="form-check-input me-3" type="checkbox" id="maincheckbox" />
+               Name
+            </div>
+         </td>
+         <td class="ps-lg-0 ps-3 align-middle">Item Type</td>
+         <td class="align-middle">Rate</td>
+         <td class="align-middle">Quantity</td>
+         <td class="align-middle">Available</td>
+         @if (hasMenuPermissionAddEdit || hasMenuPermissionDelete)
+         {
+            <td class="align-middle">Action</td>
+         }
+      </tr>
+
+      <tbody>
+         @if (Model.Count == 0)
+         {
+            <tr>
+               <td colspan="6" class="text-center border-bottom-0">
+                  <div class="d-flex flex-column">
+                     <i class="bi bi-emoji-frown fs-4"></i>
+                     <div>No records found</div>
+                  </div>
+               </td>
+            </tr>
+         }
+         else
+         {
+            @foreach (var item in Model)
+            {
+               var hasImage = !string.IsNullOrEmpty(item.Itemimg);
+               var imagePath = hasImage ? Url.Content("~/images/uploads/" + item.Itemimg) :
+               Url.Content("~/images/dining-menu.png");
+               <tr>
+                  <td>
+                     <div class="d-flex align-items-center ">
+                        <input class="form-check-input me-3 item-checkbox" type="checkbox" name="item-checkbox-@item.Itemid"
+                           id="item-checkbox-@item.Itemid" />
+                        <input type="hidden" name="Itemid" value="@item.Itemid">
+                        <img class="profilephotosmall me-3" src="@imagePath" alt="This is image" height="50px" width="50px" />
+                        <span class="truncate-text" style="min-width: 190px;" title="@item.Itemname">@item.Itemname</span>
+                     </div>
+                  </td>
+                  <td>
+                     @{
+                        string iconPath = "~/images/icons/veg-icon.svg";
+                        if (item.ItemType == "Veg")
+                        {
+                           iconPath = "~/images/icons/veg-icon.svg";
+                        }
+                        else if (item.ItemType == "Non-Veg")
+                        {
+                           iconPath = "~/images/icons/non-veg-icon.svg";
+                        }
+                        else if (item.ItemType == "Vegan")
+                        {
+                           iconPath = "~/images/icons/vegan-icon.svg";
+                        }
+                     }
+                     <img class="veg-icon mx-3" src="@Url.Content(iconPath)" alt="@item.ItemType Icon" width="20px" />
+                  </td>
+                  <td>@item.Rate</td>
+                  <td>@item.Quantity</td>
+                  <td>
+                     <div class="form-check form-switch d-flex justify-content-center">
+                        <input class="form-check-input toggle-switch toggle-switch-quick" type="checkbox" role="switch"
+                           name="toggle-switch-quick-@item.Itemid" id="toggle-switch-quick-@item.Itemid"
+                           data-id="@item.Itemid" data-field="IsAvailable" @((bool)item.Isavailable ? "checked" : "")
+                           style="width: 60px; height: 30px; opacity: 1;" @(hasMenuPermissionAddEdit ? "" : "disabled") />
+                     </div>
+                  </td>
+
+
+
+
+                  @if (hasMenuPermissionAddEdit || hasMenuPermissionDelete)
+                  {
+                     <td>
+                        <div class="d-flex justify-content-center align-items-center ">
+                           <!-- Edit Button -->
+                           @if (hasMenuPermissionAddEdit)
+                           {
+                              <button class="btn edit-item-btn" data-bs-toggle="modal" data-id="@item.Itemid">
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                    class="bi bi-pen" viewBox="0 0 16 16">
+                                    <path
+                                       d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001m-.644.766a.5.5 0 0 0-.707 0L1.95 11.756l-.764 3.057 3.057-.764L14.44 3.854a.5.5 0 0 0 0-.708z" />
+                                 </svg>
+                              </button>
+                           }
+                           <!-- Delete Icon -->
+                           @if (hasMenuPermissionDelete)
+                           {
+                              <button class="btn delete-item-btn " data-id="@item.Itemid">
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+                                    class="bi bi-trash3" viewBox="0 0 16 16">
+                                    <path
+                                       d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5M11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47M8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5" />
+                                 </svg>
+                              </button>
+                           }
+                        </div>
+                     </td>
+                  }
+               </tr>
+            }
+         }
+
+      </tbody>
+   </table>
+</div>
+@if (Model.Count != 0)
+{
+   <div class="pagination-container d-flex flex-wrap flex-md-nowrap">
+      <span>Showing @ViewBag.FromRec - @ViewBag.ToRec of @ViewBag.TotalItems</span>
+      <!-- Dropdown for Page Size -->
+      @{
+         int[] pageSizes = { 5, 10, 20 };
+      }
+      <select id="pageSizeDropdown" class="form-select">
+         @foreach (var size in pageSizes)
+         {
+            <option value="@size" selected="@(ViewBag.PageSize == size ? "selected" : null)">@size</option>
+         }
+      </select>
+      <!-- Hidden field to store total pages -->
+      <input type="hidden" id="totalPages" value="@ViewBag.TotalPages" />
+      <!-- Previous and Next Buttons -->
+      <button id="prevPageBtn">
+         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-left"
+            viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+               d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />
+         </svg>
+      </button>
+      <button id="nextPageBtn">
+         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chevron-right"
+            viewBox="0 0 16 16">
+            <path fill-rule="evenodd"
+               d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
+         </svg>
+      </button>
+   </div>
+}

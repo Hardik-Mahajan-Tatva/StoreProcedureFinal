@@ -1,0 +1,92 @@
+@model PizzaShop.Repository.ViewModels.PaginatedList<PizzaShop.Repository.ViewModels.CustomerViewModel>
+
+<div class=" bg-white">
+    <div class="customer-wrapper">
+        <table class="table">
+            <tr class="tableheader">
+                <th scope="col">
+                    <a href="javascript:void(0);" class="sortable-column" data-column="CustomerName">
+                        Name
+                        <i class="bi bi-arrow-up  sort-arrow" data-order="asc"></i>
+                        <i class="bi bi-arrow-down  sort-arrow" data-order="desc"></i>
+                    </a>
+                </th>
+                <th scope="col">
+                    Email
+                </th>
+                <th scope="col">
+                    Phone Number
+                </th>
+                <th scope="col">
+                    <a href="javascript:void(0);" class="sortable-column" data-column="CreateDate">
+                        Date
+                        <i class="bi bi-arrow-up  sort-arrow" data-order="asc"></i>
+                        <i class="bi bi-arrow-down  sort-arrow" data-order="desc"></i>
+                    </a>
+                </th>
+                <th scope="col">
+                    <a href="javascript:void(0);" class="sortable-column" data-column="TotalOrder">
+                        Total Order
+                        <i class="bi bi-arrow-up  sort-arrow" data-order="asc"></i>
+                        <i class="bi bi-arrow-down  sort-arrow" data-order="desc"></i>
+                    </a>
+                </th>
+            </tr>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="5" class="text-center border-bottom-0"> 
+                            <div class="d-flex flex-column">
+                                <i class="bi bi-emoji-frown fs-4"></i><div>No records found</div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var customer in Model)
+                    {
+                        <tr class="customer-row" data-id="@customer.CustomerId" style="cursor: pointer;">
+                            <td>@customer.CustomerName</td>
+                            <td>@customer.Email</td>
+                            <td>@customer.PhoneNumber</td>
+                            <td>@customer.CreatedDate.ToString("yyyy-MM-dd")</td>
+                            <td>@customer.TotalOrder</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+@if (Model.Count != 0)
+{
+        <div class="pagination-container d-flex flex-wrap flex-md-nowrap">
+            <span>Showing @ViewBag.FromRec - @ViewBag.ToRec of @ViewBag.TotalItems</span>
+            @{
+                int[] pageSizes = { 5, 10, 20 };
+            }
+            <select id="pageSizeDropdown" class="form-select">
+                @foreach (var size in pageSizes)
+                {
+                    <option value="@size" selected="@(ViewBag.PageSize == size ? "selected" : null)">@size</option>
+                }
+        </select>
+        <input type="hidden" id="totalPages" value="@ViewBag.TotalPages" />
+        <button id="prevPageBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                class="bi bi-chevron-left" viewBox="0 0 16 16">
+                <path fill-rule="evenodd"
+                    d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0" />
+            </svg>
+        </button>
+        <button id="nextPageBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                class="bi bi-chevron-right" viewBox="0 0 16 16">
+                <path fill-rule="evenodd"
+                    d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708" />
+            </svg>
+        </button>
+    </div>
+    }
+</div>

@@ -1,0 +1,386 @@
+@model PizzaShop.Repository.ViewModels.WaitingListPageViewModel
+
+@{
+    Layout = "~/Views/Shared/_OrderAppLayout.cshtml";
+    ViewData["Title"] = "Order App Waiting List";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/order-app-waiting-list.css" />
+    <link rel="stylesheet" href="~/css/order-app-waiting-list-section-tab.css" />
+}
+
+<div class="container-fluid p-4 overflow-hidden" style="overflow-y: auto;">
+    <div class="d-flex justify-content-between mb-3 d-sm-row d-column flex-wrap flex-sm-nowrap">
+        <h1 class="custom-body-text-color">Waiting List</h1>
+        <button class="btn btn-outline-primary  waiting-token btn-sm p-2 mb-2 bg-none add-waiting-token-btn"
+            id="openAddWaitingTokenModalBtn">
+            + Waiting Token
+        </button>
+    </div>
+    <div id="section-tabs-container">
+
+    </div>
+    <div id="waitingListContainer">
+    </div>
+</div>
+<div id="addWaitingTokenModalPlaceHolder"></div>
+<div id="editWaitingTokenModalPlaceHolder"></div>
+<div id="assignTableModalContainer" class="assign-table-modal-container"></div>
+<div class="modal fade" id="deleteWaitingTokenModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5">Cancle Confirmation</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="deleteWaitingTokenForm">
+                <div class="modal-body text-center">
+                    <img src="~/images/icons/warning-icon.svg" alt="" width="30px" height="30px" class="mb-2">
+                    <p>Are you sure you want to delete this Section?</p>
+                    <input type="hidden" id="waitingTokenId">
+                </div>
+                <div class="modal-footer d-flex justify-content-center">
+                    <button type="submit" class="btn  custom-navbar-bg-color text-white">YES</button>
+                    <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">NO</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        const defaultSectionId = 0;
+        loadSectionTabs(defaultSectionId);
+        loadWaitingList(defaultSectionId);
+
+        $(document).on('click', '.section-tab', function () {
+            $('.section-tab').removeClass('active');
+            $(this).addClass('active');
+
+            const sectionId = $(this).data('section-id');
+            loadWaitingList(sectionId);
+        });
+        function loadSectionTabs(selectedSectionId) {
+            $.ajax({
+                url: '@Url.Action("GetSectionTabs", "OrderAppWaitingList")',
+                type: 'GET',
+                data: { selectedSectionId: selectedSectionId },
+                success: function (data) {
+                    $('#section-tabs-container').html(data);
+                    loadWaitingList(selectedSectionId);
+                },
+                error: function () {
+                    toastr.error('Failed to load section tabs.', 'Error');
+                }
+            });
+        }
+        function loadWaitingList(sectionId) {
+            $.ajax({
+                url: '@Url.Action("GetWaitingList", "OrderAppWaitingList")',
+                type: 'GET',
+                data: { sectionId: sectionId },
+                success: function (data) {
+                    $('#waitingListContainer').html(data);
+                },
+                error: function () {
+                    toastr.error('Failed to load waiting list.', 'Error');
+                }
+            });
+        }
+
+        $("#openAddWaitingTokenModalBtn").click(function () {
+            $.ajax({
+                url: '@Url.Action("OpenAddWaitingTokenModal", "OrderAppWaitingList")',
+                type: "GET",
+                success: function (data) {
+                    $("#addWaitingTokenModalPlaceHolder").html(data);
+
+                    var modal = new bootstrap.Modal(document.getElementById("addWaitingTokenModal"));
+                    modal.show();
+                },
+                error: function () {
+                    toastr.error("Failed to load modal data.", "Error");
+                }
+            });
+        });
+
+        $(document).on("submit", "#addNewWaitingTokenForm", function (e) {
+            e.preventDefault();
+
+            var form = $(this);
+            $.ajax({
+                url: form.attr("action"),
+                type: form.attr("method"),
+                data: form.serialize(),
+                success: function (response) {
+                    if (response.success) {
+
+                        toastr.success(response.message);
+
+                        let addWaitingTokenModal = document.getElementById("addWaitingTokenModal");
+                        let modalInstance = bootstrap.Modal.getOrCreateInstance(addWaitingTokenModal);
+                        modalInstance.hide();
+
+                        const updatedSectionId = response.updatedSectionId ?? 0;
+                        loadSectionTabs(updatedSectionId);
+
+                    } else {
+                        toastr.error(response.message);
+                    }
+
+                },
+                error: function (xhr) {
+                    toastr.error("Something went wrong: " + xhr.statusText);
+                }
+            });
+        });
+
+
+
+        $(document).on("click", ".edit-waiting-token", function () {
+            var customerId = $(this).data("customerid");
+            var sectionId = $(this).data("sectionid");
+            $.ajax({
+                url: '/OrderAppWaitingList/OpenEditWaitingTokenModal',
+                type: 'GET',
+                data: { id: customerId },
+                success: function (html) {
+                    $('#editWaitingTokenModalPlaceHolder').html(html);
+                    var modal = new bootstrap.Modal(document.getElementById('editWaitingTokenModal'));
+                    modal.show();
+                },
+                error: function () {
+                    toastr.error("Failed to load edit modal.");
+                }
+            });
+        });
+        $(document).on("submit", "#editWaitingTokenForm", function (e) {
+            e.preventDefault();
+
+            var form = $(this);
+            $.ajax({
+                url: form.attr("action"),
+                type: "POST",
+                data: form.serialize(),
+                success: function (response) {
+                    if (response.success) {
+                        $('#editWaitingTokenModal').modal('hide');
+                        toastr.success("Waiting token updated successfully.");
+
+                        const updatedSectionId = response.updatedSectionId;
+                        loadSectionTabs(updatedSectionId);
+                    } else {
+                        if (response.message != null) {
+                            toastr.error(response.message);
+                            $('#editWaitingTokenModal').modal('hide');
+                        }
+                        $('#editWaitingTokenModalPlaceHolder').html(response);
+                    }
+                }
+                ,
+                error: function () {
+                    toastr.error("Error occurred while updating.");
+                }
+            });
+        });
+        $(document).on("click", ".deleteWaitingTokenBtn", function () {
+            var waitingTokenId = $(this).data("waitingtokenid");
+
+            if (waitingTokenId) {
+                $("#waitingTokenId").val(waitingTokenId);
+
+                $("#deleteWaitingTokenModal").modal("show");
+            } else {
+                toastr.error("Waiting token ID not found.");
+            }
+        });
+
+
+
+        $('#deleteWaitingTokenForm').submit(function (e) {
+            e.preventDefault();
+
+            const tokenId = $('#waitingTokenId').val();
+
+            $.ajax({
+                url: '/OrderAppWaitingList/DeleteWaitingToken',
+                type: 'POST',
+                data: { id: tokenId },
+                success: function (response) {
+                    if (response.success) {
+                        $('#deleteWaitingTokenModal').modal('hide');
+                        $(`#waitingTokenRow_${tokenId}`).remove();
+                        loadSectionTabs(defaultSectionId);
+                    } else {
+                        toastr.error("Failed to delete token.");
+                    }
+                },
+                error: function () {
+                    toastr.error("Error occurred while deleting token.");
+                }
+            });
+        });
+
+        $(document).on('blur', '#Email', function () {
+            var email = $(this).val().trim();
+
+            if (!email) {
+                $('#Name, #MobileNumber, #NoOfPersons').val('');
+                return;
+            }
+
+            $.ajax({
+                url: '/OrderAppTableView/GetCustomerDetailsByEmail',
+                type: 'GET',
+                data: { email: email },
+                success: function (data) {
+                    if (data) {
+                        $('#Name').val(data.name);
+                        $('#MobileNumber').val(data.mobileNumber);
+                        $('#NoOfPersons').val(data.noOfPersons ?? '');
+                    } else {
+                        $('#Name, #MobileNumber, #NoOfPersons').val('');
+                    }
+                },
+                error: function () {
+                    toastr.error('Error fetching customer data.');
+                    $('#Name, #MobileNumber, #NoOfPersons').val('');
+                }
+            });
+        });
+
+        $(document).on('input', '#Email', function () {
+            var email = $(this).val().trim();
+            if (!email) {
+                $('#Name, #MobileNumber, #NoOfPersons').val('');
+            }
+        });
+
+    });
+
+</script>
+
+<script>
+    $(document).ready(function () {
+
+        $(document).on('click', '.open-assign-table-modal', function () {
+            var customerId = $(this).data('customerid');
+
+            $.ajax({
+                url: '/OrderAppWaitingList/LoadAssignTableModal',
+                type: 'GET',
+                data: { customerId: customerId },
+                success: function (modalHtml) {
+                    $('.assign-table-modal-container').html(modalHtml);
+                    const modalEl = document.querySelector('.assign-table-modal');
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                }
+            });
+        });
+
+        $(document).on('change', '.section-checkbox', function () {
+            let selectedSectionIds = $('.section-checkbox:checked').map(function () {
+                return $(this).val();
+            }).get();
+
+            let selectedLabels = $('.section-checkbox:checked').map(function () {
+                return $(this).next('label').text();
+            }).get();
+            let tableLabels = $('.table-checkbox:checked').map(function () {
+                return $(this).next('label').text();
+            }).get();
+
+            if (selectedLabels.length === 0) {
+                $('#sectionDropdownBtn').text('Select Sections');
+                $('#tableDropdownBtn').text('Select Tables');
+            } else if (selectedLabels.length === 1) {
+                $('#sectionDropdownBtn').text(selectedLabels[0]);
+            } else {
+                $('#sectionDropdownBtn').text(`${selectedLabels[0]} +${selectedLabels.length - 1}`);
+            }
+
+            const tableContainer = $('#tableCheckboxList');
+            tableContainer.empty();
+
+            if (selectedSectionIds.length > 0) {
+                $.ajax({
+                    url: '/OrderAppWaitingList/GetTablesBySection',
+                    traditional: true,
+                    data: { sectionIds: selectedSectionIds },
+                    success: function (data) {
+                        $.each(data, function (i, table) {
+                            tableContainer.append(`
+                        <li class="ms-2">
+                            <input type="checkbox" class="form-check-input me-2 table-checkbox"
+                                name="TableIds" value="${table.tableId}" id="table_${table.tableId}" />
+                            <label for="table_${table.tableId}">${table.tableName} (${table.sectionName})</label>
+                        </li>
+                    `);
+                        });
+                    }
+                });
+            }
+        });
+        $(document).on('change', '.table-checkbox', function () {
+            let tableLabels = $('.table-checkbox:checked').map(function () {
+                return $(this).next('label').text();
+            }).get();
+
+            if (tableLabels.length === 0) {
+                $('#tableDropdownBtn').text('Select Tables');
+            } else if (tableLabels.length === 1) {
+                $('#tableDropdownBtn').text(tableLabels[0]);
+            } else {
+                $('#tableDropdownBtn').text(`${tableLabels[0]} +${tableLabels.length - 1}`);
+            }
+        });
+
+
+        $(document).on('submit', '.assign-table-form', function (e) {
+            e.preventDefault();
+
+            const form = $(this);
+            const formData = form.serialize();
+
+            $.ajax({
+                url: form.attr('action'),
+                method: form.attr('method'),
+                data: formData,
+                success: function (response) {
+                    if (response.isSuccess) {
+                        toastr.success(response.message);
+
+                        $('.assign-table-modal').modal('hide');
+
+                        if (response.orderId) {
+                            $.ajax({
+                                url: '/OrderAppMenu/EncryptOrderId',
+                                type: 'GET',
+                                data: { orderId: response.orderId },
+                                success: function (encryptResponse) {
+                                    if (encryptResponse.success) {
+                                        const encryptedOrderId = encryptResponse.encryptedOrderId;
+                                        window.location.href = `/OrderAppMenu/Index?orderId=${encodeURIComponent(encryptedOrderId)}`;
+                                    } else {
+                                        toastr.error("Failed to encrypt order ID.");
+                                    }
+                                },
+                                error: function () {
+                                    toastr.error("Error calling encryption API.");
+                                }
+                            });
+                        }
+                    } else {
+                        toastr.error(response.message);
+                    }
+                },
+                error: function () {
+                    toastr.error("An error occurred while assigning tables.");
+                }
+            });
+        });
+    });
+</script>

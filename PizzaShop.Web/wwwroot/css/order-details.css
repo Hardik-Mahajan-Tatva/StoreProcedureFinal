@@ -1,0 +1,12 @@
+thead {
+  border: none !important;
+}
+
+.table > :not(:last-child) > :last-child > * {
+  border-bottom-color: #dee2e6 !important;
+}
+
+tfoot tr,
+tfoot td {
+  border: none !important;
+}
