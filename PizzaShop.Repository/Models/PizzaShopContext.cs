@@ -14,6 +14,7 @@ public partial class PizzaShopContext : DbContext
         : base(options)
     {
     }
+    public DbSet<KOTFlatData> KOTFlatData { get; set; } = null!;
 
     public virtual DbSet<Category> Categories { get; set; }
 
@@ -86,6 +87,7 @@ public partial class PizzaShopContext : DbContext
             .HasPostgresEnum("statustype", new[] { "Active", "Inactive" })
             .HasPostgresEnum("tablestatus", new[] { "Available", "Occupied", "Reserved" });
 
+        modelBuilder.Entity<KOTFlatData>().HasNoKey();
         modelBuilder.Entity<Category>(entity =>
         {
             entity.HasKey(e => e.Categoryid).HasName("category_pkey");

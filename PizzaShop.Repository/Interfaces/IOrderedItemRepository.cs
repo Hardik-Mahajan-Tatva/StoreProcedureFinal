@@ -11,7 +11,7 @@ namespace PizzaShop.Repository.Interfaces
         /// <param name="orderedItemId">The ID of the ordered item to update.</param>
         /// <param name="readyQuantity">The new ready quantity to set.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        Task UpdateReadyQuantityAsync(int orderedItemId, int readyQuantity);
+        // Task UpdateReadyQuantityAsync(int orderedItemId, int readyQuantity);
 
         /// <summary>
         /// Updates the quantity of an ordered item asynchronously.
@@ -19,7 +19,7 @@ namespace PizzaShop.Repository.Interfaces
         /// <param name="orderedItemId">The ID of the ordered item to update.</param>
         /// <param name="Quantity">The new quantity to set.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        Task UpdateQuantityAsync(int orderedItemId, int Quantity);
+        // Task UpdateQuantityAsync(int orderedItemId, int Quantity);
 
         /// <summary>
         /// Updates the status of an order asynchronously.
@@ -109,5 +109,9 @@ namespace PizzaShop.Repository.Interfaces
             DateTime? endDate,
             int count
         );
+
+        Task UpdateReadyQuantitiesAsync(List<ReadyQuantityUpdateViewModel> updates);
+
+        Task UpdateQuantitiesAsync(List<ReadyQuantityUpdateViewModel> updates);
     }
 }

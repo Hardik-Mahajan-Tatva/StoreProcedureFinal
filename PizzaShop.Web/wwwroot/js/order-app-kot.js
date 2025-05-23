@@ -58,7 +58,7 @@ $(document).ready(function () {
         });
       },
       error: function (xhr, status, error) {
-        toastr.error("AJAX Error: " + status + " - " + error);
+        toastr.error("Error: " + status + " - " + error);
         toastr.info(xhr.responseText);
       },
     });

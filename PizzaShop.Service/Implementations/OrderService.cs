@@ -843,5 +843,52 @@ namespace PizzaShop.Service.Implementations
             return $"{datePart}-{orderId}";
         }
         #endregion
+
+        public async Task<PaginatedList<KOTViewModel>> GetKOTDetailsAsyncSP(int pageNumber, int pageSize, int categoryId, string itemStatus, string orderStatus = "")
+        {
+            var flatData = await _orderRepository.GetKOTDataFromProcedureAsync(pageNumber, pageSize, categoryId, orderStatus, itemStatus);
+
+            var grouped = flatData
+                .GroupBy(x => x.OrderId)
+                .Select(orderGroup => new KOTViewModel
+                {
+                    OrderNumber = orderGroup.Key,
+                    SectionNames = orderGroup.Select(x => x.SectionName).Distinct().ToList() ,
+                    TableNames = orderGroup.Select(x => x.TableName).Distinct().ToList(),
+                    CreatedAt = orderGroup.First().CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A",
+                    CreatedAtRaw = orderGroup.First().CreatedAt,
+                    Status = orderStatus,
+                    SpecialInstructions = orderGroup.First().OrderwiseComment ?? "No special instructions",
+                    OrderItems = orderGroup
+                        .GroupBy(i => i.ItemId)
+                        .Select(itemGroup => new OrderItemViewModel
+                        {
+                            OrderItemId = itemGroup.First().OrderItemId,
+                            ItemName = itemGroup.First().ItemName,
+                            Quantity = itemStatus == "InProgress"
+                                ? itemGroup.First().Quantity - itemGroup.First().ReadyQuantity
+                                : itemGroup.First().ReadyQuantity,
+                            ReadyQuantity = itemGroup.First().ReadyQuantity,
+                            ItemWiseComment = itemGroup.First().ItemwiseComment ?? "No comment",
+                            UnitPrice = itemGroup.First().ItemRate,
+                            Total = itemGroup.First().ItemRate * itemGroup.First().Quantity,
+                            ModifierTotal = itemGroup
+                                .Where(x => !string.IsNullOrEmpty(x.ModifierName))
+                                .Sum(x => x.ModifierRate ?? 0),
+                            Modifiers = itemGroup
+                                .Where(x => !string.IsNullOrEmpty(x.ModifierName))
+                                .Select(x => new ModifierViewModel
+                                {
+                                    Modifiername = x.ModifierName ?? "",
+                                    Rate = x.ModifierRate ?? 0
+                                }).ToList()
+                        }).ToList()
+                }).Where(k => k.OrderItems.Any()).ToList();
+
+            var totalCount = grouped.Count;
+
+            return new PaginatedList<KOTViewModel>(grouped, totalCount, pageNumber, pageSize);
+        }
+
     }
 }

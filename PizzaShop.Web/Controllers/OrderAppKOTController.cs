@@ -25,30 +25,46 @@ namespace PizzaShop.Web.Controllers
         [HttpGet("OrderAppKOT/Index/{categoryId?}/{pageNumber?}")]
         public async Task<IActionResult> Index(int categoryId = 0, int pageNumber = 1, int pageSize = 4, string orderStatus = "InProgress", string itemStatus = "InProgress")
         {
-            try
-            {
-                var categories = await _categoryService.GetAll();
-                string? categoryName = categoryId == 0 ? "All" : await _categoryService.GetCategoryNameByCategoryId(categoryId);
-                var kotData = await _orderService.GetKOTDetailsAsync(pageNumber, pageSize, categoryId, orderStatus, itemStatus);
+            // try
+            // {
+            //     var categories = await _categoryService.GetAll();
+            //     string? categoryName = categoryId == 0 ? "All" : await _categoryService.GetCategoryNameByCategoryId(categoryId);
+            //     var kotData = await _orderService.GetKOTDetailsAsync(pageNumber, pageSize, categoryId, orderStatus, itemStatus);
 
-                ViewBag.Categories = categories;
-                ViewBag.SelectedCategoryId = categoryId;
-                ViewBag.SelectedCategoryName = categoryName;
-                ViewBag.PageIndex = kotData.PageIndex;
-                ViewBag.TotalPages = kotData.TotalPages;
-                ViewBag.OrderStatusButton = orderStatus;
+            //     ViewBag.Categories = categories;
+            //     ViewBag.SelectedCategoryId = categoryId;
+            //     ViewBag.SelectedCategoryName = categoryName;
+            //     ViewBag.PageIndex = kotData.PageIndex;
+            //     ViewBag.TotalPages = kotData.TotalPages;
+            //     ViewBag.OrderStatusButton = orderStatus;
 
-                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                {
-                    return PartialView("_KOTPartial", kotData);
-                }
-                return View(kotData);
-            }
-            catch (Exception)
+            //     if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            //     {
+            //         return PartialView("_KOTPartial", kotData);
+            //     }
+            //     return View(kotData);
+            // }
+            // catch (Exception)
+            // {
+            //     TempData["ErrorMessage"] = "An error occurred while processing your request. Please try again.";
+            //     return View();
+            // }
+            var categories = await _categoryService.GetAll();
+            string? categoryName = categoryId == 0 ? "All" : await _categoryService.GetCategoryNameByCategoryId(categoryId);
+
+            ViewBag.Categories = categories;
+            ViewBag.SelectedCategoryId = categoryId;
+            ViewBag.SelectedCategoryName = categoryName;
+            var kotData = await _orderService.GetKOTDetailsAsyncSP(pageNumber, pageSize, categoryId, itemStatus, orderStatus);
+            ViewBag.PageIndex = kotData.PageIndex;
+            ViewBag.TotalPages = kotData.TotalPages;
+            ViewBag.OrderStatusButton = orderStatus;
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
             {
-                TempData["ErrorMessage"] = "An error occurred while processing your request. Please try again.";
-                return View();
+                return PartialView("_KOTPartial", kotData);
             }
+            return View(kotData);
         }
         #endregion
 

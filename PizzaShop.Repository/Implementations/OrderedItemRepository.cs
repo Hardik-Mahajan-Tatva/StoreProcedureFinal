@@ -1,4 +1,8 @@
+using System.Data;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using NpgsqlTypes;
 using PizzaShop.Repository.Interfaces;
 using PizzaShop.Repository.Models;
 using PizzaShop.Repository.ViewModels;
@@ -19,29 +23,66 @@ namespace PizzaShop.Repository.Implementations
         #endregion
 
         #region UpdateReadyQuantityAsync
-        public async Task UpdateReadyQuantityAsync(int orderedItemId, int readyQuantity)
+        // public async Task UpdateReadyQuantityAsync(int orderedItemId, int readyQuantity)
+        // {
+        //     var item = await _context.Ordereditems.FindAsync(orderedItemId);
+        //     if (item != null)
+        //     {
+        //         item.Readyquantity += readyQuantity;
+        //         _context.Ordereditems.Update(item);
+        //         await _context.SaveChangesAsync();
+        //     }
+        // }
+        public async Task UpdateReadyQuantitiesAsync(List<ReadyQuantityUpdateViewModel> updates)
         {
-            var item = await _context.Ordereditems.FindAsync(orderedItemId);
-            if (item != null)
+            var updatesForJson = updates.Select(u => new
             {
-                item.Readyquantity += readyQuantity;
-                _context.Ordereditems.Update(item);
-                await _context.SaveChangesAsync();
-            }
+                ordered_item_id = u.OrderedItemId,
+                ready_quantity = u.ReadyQuantity
+            });
+
+            var json = JsonSerializer.Serialize(updatesForJson);
+
+            var sql = "CALL update_ready_quantities_json(@p_updates)";
+            var param = new NpgsqlParameter("@p_updates", NpgsqlTypes.NpgsqlDbType.Json)
+            {
+                Value = json
+            };
+
+            await _context.Database.ExecuteSqlRawAsync(sql, param);
         }
         #endregion
 
         #region UpdateQuantityAsync
-        public async Task UpdateQuantityAsync(int orderedItemId, int Quantity)
+        // public async Task UpdateQuantityAsync(int orderedItemId, int Quantity)
+        // {
+        //     var item = await _context.Ordereditems.FindAsync(orderedItemId);
+        //     if (item != null)
+        //     {
+        //         item.Readyquantity -= Quantity;
+        //         _context.Ordereditems.Update(item);
+        //         await _context.SaveChangesAsync();
+        //     }
+        // }
+        public async Task UpdateQuantitiesAsync(List<ReadyQuantityUpdateViewModel> updates)
         {
-            var item = await _context.Ordereditems.FindAsync(orderedItemId);
-            if (item != null)
+            var updatesForJson = updates.Select(u => new
             {
-                item.Readyquantity -= Quantity;
-                _context.Ordereditems.Update(item);
-                await _context.SaveChangesAsync();
-            }
+                ordered_item_id = u.OrderedItemId,
+                quantity = u.ReadyQuantity
+            });
+
+            var json = JsonSerializer.Serialize(updatesForJson);
+
+            var sql = "CALL update_quantities_json(@p_updates)";
+            var param = new NpgsqlParameter("@p_updates", NpgsqlDbType.Json)
+            {
+                Value = json
+            };
+            await _context.Database.ExecuteSqlRawAsync(sql, param);
         }
+
+
         #endregion
 
         #region UpdateOrderStatusAsync

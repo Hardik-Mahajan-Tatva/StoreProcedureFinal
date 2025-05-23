@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using PizzaShop.Repository.Interfaces;
 using PizzaShop.Repository.Models;
 using PizzaShop.Repository.ViewModels;
@@ -695,5 +696,26 @@ namespace PizzaShop.Repository.Implementations
             );
         }
         #endregion
+
+        public async Task<List<KOTFlatData>> GetKOTDataFromProcedureAsync(int pageNumber, int pageSize, int categoryId, string orderStatus, string itemStatus)
+        {
+            var parameters = new[]
+            {
+        new NpgsqlParameter("@PageNumber", pageNumber),
+        new NpgsqlParameter("@PageSize", pageSize),
+        new NpgsqlParameter("@CategoryId", categoryId),
+        new NpgsqlParameter("@OrderStatus", orderStatus ?? string.Empty),
+        new NpgsqlParameter("@ItemStatus", itemStatus ?? string.Empty)
+    };
+
+            var result = await _context.KOTFlatData
+                .FromSqlRaw("SELECT * FROM sp_get_kot_data(@PageNumber, @PageSize, @CategoryId, @OrderStatus, @ItemStatus)", parameters)
+                .ToListAsync();
+
+            return result;
+        }
+
+
+
     }
 }

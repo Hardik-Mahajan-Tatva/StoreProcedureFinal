@@ -253,5 +253,7 @@ namespace PizzaShop.Repository.Interfaces
         /// <param name="statuses">The array of statuses to check for.</param>
         /// <returns>True if the customer has orders with the specified statuses, otherwise false.</returns>
         Task<bool> HasOrderWithStatusAsync(int customerId, int[] statuses);
+
+        Task<List<KOTFlatData>> GetKOTDataFromProcedureAsync(int pageNumber, int pageSize, int categoryId, string orderStatus, string itemStatus);
     }
 }
