@@ -51,6 +51,7 @@ namespace PizzaShop.Service.Interfaces
         /// <param name="categoryId">The ID of the category to retrieve the name for.</param>
         /// <returns>The name of the category if found, otherwise null.</returns>
         Task<string?> GetCategoryNameByCategoryId(int categoryId);
+        Task<List<CategoryViewModel>> GetAllSP();
     }
 }
 

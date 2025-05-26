@@ -49,7 +49,7 @@ namespace PizzaShop.Web.Controllers
             //     TempData["ErrorMessage"] = "An error occurred while processing your request. Please try again.";
             //     return View();
             // }
-            var categories = await _categoryService.GetAll();
+            var categories = await _categoryService.GetAllSP();
             string? categoryName = categoryId == 0 ? "All" : await _categoryService.GetCategoryNameByCategoryId(categoryId);
 
             ViewBag.Categories = categories;

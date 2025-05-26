@@ -65,6 +65,9 @@ namespace Pizzashop.Repository.Interfaces
         /// <param name="categoryId">The ID of the category.</param>
         /// <returns>The name of the category if found in the database, otherwise null.</returns>
         Task<string?> GetCategoryNameByCategoryId(int categoryId);
+
+        Task<List<Category>> SPGetAllCategoriesAsync();
+        Task<string?> SPGetCategoryNameByCategoryId(int categoryId);
     }
 }
 

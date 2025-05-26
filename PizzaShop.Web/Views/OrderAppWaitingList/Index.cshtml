@@ -64,7 +64,7 @@
         });
         function loadSectionTabs(selectedSectionId) {
             $.ajax({
-                url: '@Url.Action("GetSectionTabs", "OrderAppWaitingList")',
+                url: '/OrderAppWaitingList/GetSectionTabs',
                 type: 'GET',
                 data: { selectedSectionId: selectedSectionId },
                 success: function (data) {
@@ -78,7 +78,7 @@
         }
         function loadWaitingList(sectionId) {
             $.ajax({
-                url: '@Url.Action("GetWaitingList", "OrderAppWaitingList")',
+                url: '/OrderAppWaitingList/GetWaitingList',
                 type: 'GET',
                 data: { sectionId: sectionId },
                 success: function (data) {
@@ -92,7 +92,7 @@
 
         $("#openAddWaitingTokenModalBtn").click(function () {
             $.ajax({
-                url: '@Url.Action("OpenAddWaitingTokenModal", "OrderAppWaitingList")',
+                url: '/OrderAppWaitingList/OpenAddWaitingTokenModal',
                 type: "GET",
                 success: function (data) {
                     $("#addWaitingTokenModalPlaceHolder").html(data);

@@ -853,9 +853,9 @@ namespace PizzaShop.Service.Implementations
                 .Select(orderGroup => new KOTViewModel
                 {
                     OrderNumber = orderGroup.Key,
-                    SectionNames = orderGroup.Select(x => x.SectionName).Distinct().ToList() ,
-                    TableNames = orderGroup.Select(x => x.TableName).Distinct().ToList(),
-                    CreatedAt = orderGroup.First().CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "N/A",
+                    SectionNames = orderGroup.Select(x => x.SectionName ?? string.Empty).Distinct().ToList(),
+                    TableNames = orderGroup.Select(x => x.TableName ?? string.Empty).Distinct().ToList(),
+                    CreatedAt = orderGroup.First().CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? string.Empty,
                     CreatedAtRaw = orderGroup.First().CreatedAt,
                     Status = orderStatus,
                     SpecialInstructions = orderGroup.First().OrderwiseComment ?? "No special instructions",

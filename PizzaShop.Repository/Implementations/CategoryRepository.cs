@@ -57,6 +57,17 @@ namespace Pizzashop.Repository.Implementations
         }
         #endregion
 
+        #region SPGetAllCategoriesAsync
+        public async Task<List<Category>> SPGetAllCategoriesAsync()
+        {
+
+            List<Category> listCateogry = await _context.Categories
+        .FromSqlRaw("SELECT * FROM get_all_categories()")
+        .ToListAsync();
+            return listCateogry;
+        }
+        #endregion
+
         #region GetCategoryByIdAsync
         public async Task<Category?> GetCategoryByIdAsync(int categoryId)
         {
@@ -98,6 +109,17 @@ namespace Pizzashop.Repository.Implementations
                 .Select(c => c.Categoryname)
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
+        }
+        #endregion
+        #region SPGetCategoryNameByCategoryId
+        public async Task<string?> SPGetCategoryNameByCategoryId(int categoryId)
+        {
+            var result = await _context.Categories
+        .FromSqlRaw("SELECT get_category_name_by_id({0}) AS categoryname", categoryId)
+        .Select(x => x.Categoryname)
+        .FirstOrDefaultAsync();
+
+            return result;
         }
         #endregion
     }

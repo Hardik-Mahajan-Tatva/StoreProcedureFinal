@@ -54,6 +54,16 @@ namespace PizzaShop.Service.Implementations
                 Description = item.Description
             }).ToList();
         }
+        public async Task<List<CategoryViewModel>> GetAllSP()
+        {
+            List<Category> categoryDb = await _categoryRepository.SPGetAllCategoriesAsync();
+            return categoryDb.Select(item => new CategoryViewModel()
+            {
+                CategoryId = item.Categoryid,
+                CategoryName = item.Categoryname,
+                Description = item.Description
+            }).ToList();
+        }
 
         public async Task<CategoryViewModel> GetCategoryByIdAsync(int id)
         {
@@ -108,7 +118,7 @@ namespace PizzaShop.Service.Implementations
         }
         public async Task<string?> GetCategoryNameByCategoryId(int categoryId)
         {
-            return await _categoryRepository.GetCategoryNameByCategoryId(categoryId);
+            return await _categoryRepository.SPGetCategoryNameByCategoryId(categoryId);
         }
 
 
