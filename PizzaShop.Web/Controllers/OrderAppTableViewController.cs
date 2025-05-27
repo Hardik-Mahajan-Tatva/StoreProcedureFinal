@@ -347,6 +347,32 @@ namespace PizzaShop.Web.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
+        public async Task<IActionResult> GetCustomerDetailsByEmailSP(string email)
+        {
+            try
+            {
+                var customerData = await _customerService.GetCustomerWithLatestOrderAsync(email);
+
+                if (customerData == null)
+                {
+                    return Json(null);
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    name = customerData.Name,
+                    mobileNumber = customerData.MobileNumber,
+                    noOfPersons = customerData.NoOfPersons
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
         #endregion
+
     }
 }

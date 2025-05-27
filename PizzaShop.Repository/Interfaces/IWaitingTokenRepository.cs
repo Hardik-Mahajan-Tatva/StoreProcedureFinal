@@ -1,4 +1,5 @@
 using PizzaShop.Repository.Models;
+using PizzaShop.Repository.ViewModels;
 
 namespace PizzaShop.Repository.Interfaces
 {
@@ -102,5 +103,6 @@ namespace PizzaShop.Repository.Interfaces
         Task<bool> IsEmailAlreadyInWaitingListAsync(string email);
 
         Task<bool> DeleteWaitingTokenAsyncSP(int waitingTokenId);
+        Task<WaitingTokenViewModel?> GetCustomerWaitingDataByEmailAsyncSP(string email);
     }
 }

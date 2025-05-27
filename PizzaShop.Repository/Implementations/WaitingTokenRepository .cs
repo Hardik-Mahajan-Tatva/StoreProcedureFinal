@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using PizzaShop.Repository.Interfaces;
 using PizzaShop.Repository.Models;
+using PizzaShop.Repository.ViewModels;
 
 namespace PizzaShop.Repository.Implementations
 {
@@ -224,5 +225,29 @@ namespace PizzaShop.Repository.Implementations
                 .AnyAsync(w => w.Customer.Email == email && w.Isassigned == false);
         }
         #endregion
+
+        public async Task<WaitingTokenViewModel?> GetCustomerWaitingDataByEmailAsyncSP(string email)
+        {
+            try
+            {
+                var result = await _context
+                    .Set<WaitingTokenViewModel>()
+                    .FromSqlRaw("SELECT * FROM get_customer_waiting_data({0})", email)
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync();
+
+                return result;
+            }
+            catch (PostgresException ex) when (ex.Message.Contains("already in waiting list"))
+            {
+                throw new Exception("Customer Already waiting");
+            }
+            catch (Exception ex)
+            {
+                // Log or handle unexpected error
+                throw;
+            }
+        }
+
     }
 }

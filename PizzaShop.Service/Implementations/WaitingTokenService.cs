@@ -282,5 +282,9 @@ public class WaitingTokenService : IWaitingTokenService
     }
 
 
+    public async Task<WaitingTokenViewModel?> GetCustomerWithLatestOrderAsync(string email)
+    {
+        return await _waitingTokenRepo.GetCustomerWaitingDataByEmailAsyncSP(email);
+    }
 
 }

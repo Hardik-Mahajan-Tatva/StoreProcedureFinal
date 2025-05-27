@@ -17,4 +17,5 @@ public interface IWaitingTokenService
     Task<bool> IsMobileNumberExistsAsync(string mobileNumber);
 
     Task<List<WaitingListViewModel>> GetWaitingListBySectionAsyncSP(int sectionId);
+    Task<WaitingTokenViewModel?> GetCustomerWithLatestOrderAsync(string email);
 }
