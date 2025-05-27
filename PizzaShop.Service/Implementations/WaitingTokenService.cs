@@ -72,7 +72,38 @@ public class WaitingTokenService : IWaitingTokenService
             };
         }).ToList();
     }
+    public async Task<List<WaitingListViewModel>> GetWaitingListBySectionAsyncSP(int sectionId)
+    {
+        var (_, waitingList) = await _sectionRepo.GetWaitingListDataAsync(sectionId);
 
+        // return waitingList;
+        return waitingList.Select(t =>
+        {
+            var customerName = t.Name ?? string.Empty;
+            var phone = t.Phone ?? string.Empty;
+            var email = t.Email ?? string.Empty;
+            var customerId = t.CustomerId ?? 0;
+            var indiaZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            // int itemCountForSection = sectionItemCounts.TryGetValue(t.Sectionid, out int value) ? value : 0;
+            return new WaitingListViewModel
+            {
+
+                WaitingTokenId = t.WaitingTokenId,
+                TokenNo = $"#{t.WaitingTokenId}",
+
+
+                CreatedAt = t.CreatedAt,
+                WaitingTime = CalculateWaitingTime(t.CreatedAt),
+                Name = customerName,
+                Persons = t.Persons,
+                Phone = phone,
+                Email = email,
+                CustomerId = customerId,
+                // ItemCount = ,
+                SectionId = t.SectionId,
+            };
+        }).ToList();
+    }
 
     private static string CalculateWaitingTime(DateTime createdAt)
     {

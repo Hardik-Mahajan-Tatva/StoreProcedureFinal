@@ -15,4 +15,6 @@ public interface IWaitingTokenService
     Task<Waitingtoken?> GetWaitingTokenByCustomerIdAsync(int customerId);
     Task<bool> UpdateWaitingTokenStatusAsync(int customerId, bool status);
     Task<bool> IsMobileNumberExistsAsync(string mobileNumber);
+
+    Task<List<WaitingListViewModel>> GetWaitingListBySectionAsyncSP(int sectionId);
 }

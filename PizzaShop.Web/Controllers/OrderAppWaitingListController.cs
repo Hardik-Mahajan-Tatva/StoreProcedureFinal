@@ -38,7 +38,7 @@ namespace PizzaShop.Web.Controllers
         {
             try
             {
-                var sections = await _sectionService.GetAllSectionsAsync();
+                var sections = await _sectionService.GetAllSectionsAsyncSP();
 
                 var model = new WaitingListPageViewModel
                 {
@@ -62,7 +62,7 @@ namespace PizzaShop.Web.Controllers
         {
             try
             {
-                var waitingList = await _waitingTokenService.GetWaitingListBySectionAsync(sectionId);
+                var waitingList = await _waitingTokenService.GetWaitingListBySectionAsyncSP(sectionId);
                 return PartialView("_WaitingListPartial", waitingList);
             }
             catch (Exception ex)

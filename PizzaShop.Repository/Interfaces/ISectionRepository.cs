@@ -64,5 +64,7 @@ namespace PizzaShop.Repository.Interfaces
         /// <returns>A task that returns true if a duplicate section exists, otherwise false.</returns>
         Task<bool> CheckDuplicateSectionNameAsync(string sectionName, int? excludeSectionId = null);
         Task<List<SectionViewModel>> GetAllSectionsAsync();
+
+        Task<(List<SectionViewModel>, List<WaitingListViewModel>)> GetWaitingListDataAsync(int sectionId);
     }
 }

@@ -110,7 +110,7 @@ namespace PizzaShop.Web.Controllers
             catch (Exception)
             {
                 TempData["ErrorMessage"] = "An error occurred while processing your request. Please try again.";
-                return View("Error");
+                return RedirectToAction("GenericError", "Error");
             }
         }
         #endregion

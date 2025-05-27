@@ -57,6 +57,8 @@ namespace PizzaShop.Service.Interfaces
       /// <param name="excludeSectionId">The ID of the section to exclude from the check (optional).</param>
       /// <returns>A task that returns true if a duplicate section exists, otherwise false.</returns>
       Task<bool> CheckDuplicateSectionNameAsync(string sectionName, int? excludeSectionId = null);
+
+         Task<List<SectionViewModel>> GetAllSectionsAsyncSP();
    }
 }
 

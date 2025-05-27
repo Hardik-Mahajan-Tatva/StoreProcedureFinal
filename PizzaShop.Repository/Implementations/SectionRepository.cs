@@ -1,4 +1,7 @@
+using System.Data;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using PizzaShop.Repository.Interfaces;
 using PizzaShop.Repository.Models;
 using PizzaShop.Repository.ViewModels;
@@ -137,5 +140,72 @@ namespace PizzaShop.Repository.Implementations
                 .ToList();
         }
         #endregion
+
+        public async Task<(List<SectionViewModel>, List<WaitingListViewModel>)> GetWaitingListDataAsync(int sectionId)
+        {
+            var conn = _context.Database.GetDbConnection();
+            string jsonResult = null!;
+
+            try
+            {
+                await conn.OpenAsync();
+
+                await using var command = conn.CreateCommand();
+                command.CommandText = "SELECT usp_get_waiting_list_data(@p_section_id)";
+                command.CommandType = CommandType.Text;
+
+                var param = command.CreateParameter();
+                param.ParameterName = "p_section_id";
+                param.Value = sectionId;
+                command.Parameters.Add(param);
+
+                await using var reader = await command.ExecuteReaderAsync();
+
+                if (await reader.ReadAsync())
+                {
+                    jsonResult = reader.GetString(0);
+                }
+            }
+            catch (NpgsqlException npgEx)
+            {
+                throw new Exception("A database error occurred while fetching the waiting list data.", npgEx);
+            }
+            catch (JsonException jsonEx)
+            {
+                throw new Exception("Error while parsing JSON data from stored procedure.", jsonEx);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred in GetWaitingListDataAsync.", ex);
+            }
+            finally
+            {
+                if (conn.State != System.Data.ConnectionState.Closed)
+                    await conn.CloseAsync();
+            }
+
+            if (string.IsNullOrWhiteSpace(jsonResult))
+            {
+                return (new List<SectionViewModel>(), new List<WaitingListViewModel>());
+            }
+
+            var resultObject = JsonSerializer.Deserialize<JsonElement>(jsonResult);
+
+            var sections = JsonSerializer.Deserialize<List<SectionViewModel>>(resultObject.GetProperty("sections").ToString());
+
+
+
+            // Safely handle null waitingList
+            List<WaitingListViewModel> waitingList = new List<WaitingListViewModel>();
+            if (resultObject.TryGetProperty("waitingList", out var waitingListElement) && waitingListElement.ValueKind != JsonValueKind.Null)
+            {
+                waitingList = JsonSerializer.Deserialize<List<WaitingListViewModel>>(waitingListElement.GetRawText());
+
+            }
+
+
+            return (sections ?? new List<SectionViewModel>(), waitingList ?? new List<WaitingListViewModel>());
+        }
+
     }
 }

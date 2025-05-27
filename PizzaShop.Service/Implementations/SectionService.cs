@@ -96,7 +96,11 @@ namespace PizzaShop.Service.Implementations
 
             await _sectionRepository.SaveAsync();
         }
-
+        public async Task<List<SectionViewModel>> GetAllSectionsAsyncSP()
+        {
+            var (sections, _) = await _sectionRepository.GetWaitingListDataAsync(0);
+            return sections;
+        }
         public async Task<List<SectionViewModel>> GetAllSectionsAsync()
         {
             var sections = await _sectionRepository.GetAllAsync();
