@@ -223,7 +223,7 @@ public class WaitingTokenService : IWaitingTokenService
 
     public async Task<bool> DeleteWaitingTokenAsync(int waitingTokenId)
     {
-        return await _waitingTokenRepo.DeleteWaitingTokenAsync(waitingTokenId);
+        return await _waitingTokenRepo.DeleteWaitingTokenAsyncSP(waitingTokenId);
     }
 
     public async Task<List<WaitingTokenViewModel>> GetWaitingTokensBySectionsAsync(List<int> sectionIds)

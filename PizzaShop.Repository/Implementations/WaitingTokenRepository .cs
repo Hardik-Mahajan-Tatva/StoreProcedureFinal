@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using PizzaShop.Repository.Interfaces;
 using PizzaShop.Repository.Models;
 
@@ -92,6 +93,49 @@ namespace PizzaShop.Repository.Implementations
             _context.Waitingtokens.Remove(token);
             await _context.SaveChangesAsync();
             return true;
+        }
+        #endregion
+        #region DeleteWaitingTokenAsyncSP
+        public async Task<bool> DeleteWaitingTokenAsyncSP(int waitingTokenId)
+        {
+            try
+            {
+                var param = new Npgsql.NpgsqlParameter("p_waiting_token_id", waitingTokenId);
+
+                await _context.Database.ExecuteSqlRawAsync("CALL delete_waiting_token({0});", param);
+
+                return true;
+            }
+            catch (Npgsql.NpgsqlException npgsqlEx)
+            {
+                Console.WriteLine("PostgreSQL error:");
+                Console.WriteLine($"Message: {npgsqlEx.Message}");
+                Console.WriteLine($"Code: {npgsqlEx.SqlState}");
+                return false;
+            }
+            catch (DbUpdateException dbUpdateEx)
+            {
+                Console.WriteLine("Database update error:");
+                Console.WriteLine($"Message: {dbUpdateEx.Message}");
+                if (dbUpdateEx.InnerException != null)
+                    Console.WriteLine($"Inner: {dbUpdateEx.InnerException.Message}");
+                return false;
+            }
+            catch (InvalidOperationException invalidOpEx)
+            {
+                Console.WriteLine("Invalid operation:");
+                Console.WriteLine($"Message: {invalidOpEx.Message}");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // General fallback
+                Console.WriteLine("Unexpected error:");
+                Console.WriteLine($"Message: {ex.Message}");
+                if (ex.InnerException != null)
+                    Console.WriteLine($"Inner: {ex.InnerException.Message}");
+                return false;
+            }
         }
         #endregion
 

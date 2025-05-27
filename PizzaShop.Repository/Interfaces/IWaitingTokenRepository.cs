@@ -100,5 +100,7 @@ namespace PizzaShop.Repository.Interfaces
         /// <param name="email">The email to check.</param>
         /// <returns>A task that returns true if the email exists, otherwise false.</returns>
         Task<bool> IsEmailAlreadyInWaitingListAsync(string email);
+
+        Task<bool> DeleteWaitingTokenAsyncSP(int waitingTokenId);
     }
 }
