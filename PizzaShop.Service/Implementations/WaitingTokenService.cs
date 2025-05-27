@@ -287,4 +287,10 @@ public class WaitingTokenService : IWaitingTokenService
         return await _waitingTokenRepo.GetCustomerWaitingDataByEmailAsyncSP(email);
     }
 
+    public async Task<bool> AddNewWaitingTokenAsyncSP(WaitingTokenViewModel model)
+    {
+        return await _waitingTokenRepo.AddNewWaitingTokenAsyncSP(model);
+    }
+
+
 }

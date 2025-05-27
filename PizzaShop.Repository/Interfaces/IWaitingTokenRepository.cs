@@ -104,5 +104,6 @@ namespace PizzaShop.Repository.Interfaces
 
         Task<bool> DeleteWaitingTokenAsyncSP(int waitingTokenId);
         Task<WaitingTokenViewModel?> GetCustomerWaitingDataByEmailAsyncSP(string email);
+        Task<bool> AddNewWaitingTokenAsyncSP(WaitingTokenViewModel model);
     }
 }

@@ -102,7 +102,7 @@ namespace PizzaShop.Web.Controllers
             }
             try
             {
-                await _waitingTokenService.AddNewWaitingTokenAsync(model);
+                await _waitingTokenService.AddNewWaitingTokenAsyncSP(model);
                 return Json(new { success = true, message = "Waiting token added successfully!" });
             }
             catch (InvalidOperationException ex)

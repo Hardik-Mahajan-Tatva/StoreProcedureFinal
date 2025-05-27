@@ -46,6 +46,7 @@ namespace PizzaShop.Repository.Implementations
         }
         #endregion
 
+
         #region UpdateAsync
         public async Task UpdateAsync(Waitingtoken token)
         {
@@ -248,6 +249,36 @@ namespace PizzaShop.Repository.Implementations
                 throw;
             }
         }
+
+        public async Task<bool> AddNewWaitingTokenAsyncSP(WaitingTokenViewModel model)
+        {
+            try
+            {
+                var parameters = new[]
+                {
+            new NpgsqlParameter("p_name", model.Name ?? (object)DBNull.Value),
+            new NpgsqlParameter("p_phone", model.MobileNumber ?? (object)DBNull.Value),
+            new NpgsqlParameter("p_no_of_persons", model.NoOfPersons),
+            new NpgsqlParameter("p_email", model.Email ?? (object)DBNull.Value),
+            new NpgsqlParameter("p_section_id", model.SectionId ?? 0),
+            new NpgsqlParameter("p_is_assigned", model.IsAssigned)
+        };
+
+                await _context.Database.ExecuteSqlRawAsync(
+                    "CALL add_waiting_token(@p_name, @p_email, @p_phone, @p_no_of_persons, @p_section_id, @p_is_assigned);",
+                    parameters
+                );
+
+                return true;
+            }
+            catch (PostgresException ex) when (ex.Message.Contains("Customer Already waiting"))
+            {
+                throw new InvalidOperationException("Customer Already waiting");
+            }
+
+        }
+
+
 
     }
 }
