@@ -135,8 +135,27 @@ namespace PizzaShop.Web.Controllers
             }
         }
         #endregion
-
         #region OpenEditWaitingTokenModal
+        [CustomAuthorize]
+        [HttpGet]
+        public async Task<IActionResult> OpenEditWaitingTokenModalSP(int id)
+        {
+            try
+            {
+                var model = await _waitingTokenService.GetWaitingTokenByIdAsyncsp(id);
+                if (model == null)
+                    return Json(new { success = false, message = "Modal not found" });
+
+                return PartialView("_EditWaitingTokenPartialModal", model);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+        #endregion
+
+        #region SaveEditWaitingTokenToDatabase
         [CustomAuthorize]
         [HttpPost]
         public async Task<IActionResult> SaveEditWaitingTokenToDatabase(WaitingTokenViewModel model)

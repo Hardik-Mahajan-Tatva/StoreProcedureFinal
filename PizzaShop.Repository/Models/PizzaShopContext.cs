@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using PizzaShop.Repository.ViewModels;
 
 namespace PizzaShop.Repository.Models;
 
@@ -15,6 +16,7 @@ public partial class PizzaShopContext : DbContext
     {
     }
     public DbSet<KOTFlatData> KOTFlatData { get; set; } = null!;
+    public DbSet<WaitingTokenViewModel> WaitingTokenViewModelRaw { get; set; } = null!;
 
     public virtual DbSet<Category> Categories { get; set; }
 
@@ -88,6 +90,7 @@ public partial class PizzaShopContext : DbContext
             .HasPostgresEnum("tablestatus", new[] { "Available", "Occupied", "Reserved" });
 
         modelBuilder.Entity<KOTFlatData>().HasNoKey();
+        modelBuilder.Entity<WaitingTokenViewModel>().HasNoKey();
         modelBuilder.Entity<Category>(entity =>
         {
             entity.HasKey(e => e.Categoryid).HasName("category_pkey");

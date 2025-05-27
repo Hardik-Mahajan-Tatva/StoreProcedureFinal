@@ -143,7 +143,7 @@
             var customerId = $(this).data("customerid");
             var sectionId = $(this).data("sectionid");
             $.ajax({
-                url: '/OrderAppWaitingList/OpenEditWaitingTokenModal',
+                url: '/OrderAppWaitingList/OpenEditWaitingTokenModalSP',
                 type: 'GET',
                 data: { id: customerId },
                 success: function (html) {

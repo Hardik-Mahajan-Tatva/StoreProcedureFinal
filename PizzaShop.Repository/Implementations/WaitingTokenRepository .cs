@@ -1,3 +1,5 @@
+using System.Text;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using PizzaShop.Repository.Interfaces;
@@ -100,44 +102,11 @@ namespace PizzaShop.Repository.Implementations
         #region DeleteWaitingTokenAsyncSP
         public async Task<bool> DeleteWaitingTokenAsyncSP(int waitingTokenId)
         {
-            try
-            {
-                var param = new Npgsql.NpgsqlParameter("p_waiting_token_id", waitingTokenId);
+            var param = new Npgsql.NpgsqlParameter("p_waiting_token_id", waitingTokenId);
 
-                await _context.Database.ExecuteSqlRawAsync("CALL delete_waiting_token({0});", param);
+            await _context.Database.ExecuteSqlRawAsync("CALL delete_waiting_token({0});", param);
 
-                return true;
-            }
-            catch (Npgsql.NpgsqlException npgsqlEx)
-            {
-                Console.WriteLine("PostgreSQL error:");
-                Console.WriteLine($"Message: {npgsqlEx.Message}");
-                Console.WriteLine($"Code: {npgsqlEx.SqlState}");
-                return false;
-            }
-            catch (DbUpdateException dbUpdateEx)
-            {
-                Console.WriteLine("Database update error:");
-                Console.WriteLine($"Message: {dbUpdateEx.Message}");
-                if (dbUpdateEx.InnerException != null)
-                    Console.WriteLine($"Inner: {dbUpdateEx.InnerException.Message}");
-                return false;
-            }
-            catch (InvalidOperationException invalidOpEx)
-            {
-                Console.WriteLine("Invalid operation:");
-                Console.WriteLine($"Message: {invalidOpEx.Message}");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                // General fallback
-                Console.WriteLine("Unexpected error:");
-                Console.WriteLine($"Message: {ex.Message}");
-                if (ex.InnerException != null)
-                    Console.WriteLine($"Inner: {ex.InnerException.Message}");
-                return false;
-            }
+            return true;
         }
         #endregion
 
@@ -229,26 +198,16 @@ namespace PizzaShop.Repository.Implementations
 
         public async Task<WaitingTokenViewModel?> GetCustomerWaitingDataByEmailAsyncSP(string email)
         {
-            try
-            {
-                var result = await _context
-                    .Set<WaitingTokenViewModel>()
-                    .FromSqlRaw("SELECT * FROM get_customer_waiting_data({0})", email)
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync();
 
-                return result;
-            }
-            catch (PostgresException ex) when (ex.Message.Contains("already in waiting list"))
-            {
-                throw new Exception("Customer Already waiting");
-            }
-            catch (Exception ex)
-            {
-                // Log or handle unexpected error
-                throw;
-            }
+            var result = await _context
+                .Set<WaitingTokenViewModel>()
+                .FromSqlRaw("SELECT * FROM get_customer_waiting_data({0})", email)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            return result;
         }
+
 
         public async Task<bool> AddNewWaitingTokenAsyncSP(WaitingTokenViewModel model)
         {
@@ -277,6 +236,46 @@ namespace PizzaShop.Repository.Implementations
             }
 
         }
+        public async Task<TokenWithSectionsResult?> GetWaitingTokenWithSectionsSPAsync(int customerId)
+        {
+
+            var conn = _context.Database.GetDbConnection();
+
+            if (conn.State != System.Data.ConnectionState.Open)
+                await conn.OpenAsync();
+
+            using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT get_waiting_token_with_sections(@p0)";
+            cmd.CommandType = System.Data.CommandType.Text;
+            cmd.Parameters.Add(new Npgsql.NpgsqlParameter("p0", customerId));
+
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (await reader.ReadAsync() && !reader.IsDBNull(0))
+            {
+                var json = reader.GetString(0);
+
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    return null;
+                }
+
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+
+                var result = JsonSerializer.Deserialize<TokenWithSectionsResult>(json, options);
+                return result;
+
+            }
+            return null;
+        }
+
+
+
+
+
 
 
 
