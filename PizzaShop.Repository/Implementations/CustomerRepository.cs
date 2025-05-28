@@ -113,7 +113,6 @@ namespace PizzaShop.Repository.Implementations
         public async Task<Customer?> GetCustomerByCustomerIdAsync(int customerId)
         {
             return await _context.Customers
-                .AsNoTracking()
                 .FirstOrDefaultAsync(c => c.Customerid == customerId);
         }
         #endregion

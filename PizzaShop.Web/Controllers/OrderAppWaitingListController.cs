@@ -164,10 +164,10 @@ namespace PizzaShop.Web.Controllers
             {
                 if (!ModelState.IsValid)
                 {
-                    model.Sections = await _sectionService.GetAllSectionsAsync();
+                    model.Sections = await _sectionService.GetAllSectionsAsyncSP();
                     return PartialView("_EditWaitingTokenPartialModal", model);
                 }
-                var result = await _waitingTokenService.UpdateWaitingTokenAsync(model);
+                var result = await _waitingTokenService.UpdateWaitingTokenAsyncSP(model);
                 if (!result)
                     return Json(new { success = false });
 

@@ -1,3 +1,4 @@
+using System.Data;
 using System.Text;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
@@ -272,6 +273,30 @@ namespace PizzaShop.Repository.Implementations
             return null;
         }
 
+        #region UpdateCustomerAndWaitingTokenUsingStoredProcedureAsync
+        public async Task<bool> UpdateCustomerAndWaitingTokenUsingSPAsync(WaitingTokenViewModel model)
+        {
+            var customerId = model.CustomerId ?? 0;
+            var connection = _context.Database.GetDbConnection();
+            await using (connection)
+            {
+                await connection.OpenAsync();
+                using var command = connection.CreateCommand();
+                command.CommandText = "CALL update_waiting_token_and_customer(@customerId, @name, @email, @phone, @noOfPeople, @sectionId)";
+                command.CommandType = CommandType.Text;
+
+                command.Parameters.Add(new Npgsql.NpgsqlParameter("@customerId", customerId));
+                command.Parameters.Add(new Npgsql.NpgsqlParameter("@name", model.Name));
+                command.Parameters.Add(new Npgsql.NpgsqlParameter("@email", model.Email ?? (object)DBNull.Value));
+                command.Parameters.Add(new Npgsql.NpgsqlParameter("@phone", model.MobileNumber));
+                command.Parameters.Add(new Npgsql.NpgsqlParameter("@noOfPeople", model.NoOfPersons));
+                command.Parameters.Add(new Npgsql.NpgsqlParameter("@sectionId", model.SectionId ?? 0));
+
+                var rowsAffected = await command.ExecuteNonQueryAsync();
+                return true; // assume procedure does the right job
+            }
+        }
+        #endregion
 
 
 

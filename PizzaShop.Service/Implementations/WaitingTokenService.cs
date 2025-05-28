@@ -316,5 +316,10 @@ public class WaitingTokenService : IWaitingTokenService
 
         return vm;
     }
+    public async Task<bool> UpdateWaitingTokenAsyncSP(WaitingTokenViewModel model)
+    {
+        return await _waitingTokenRepo.UpdateCustomerAndWaitingTokenUsingSPAsync(model);
+    }
+
 
 }

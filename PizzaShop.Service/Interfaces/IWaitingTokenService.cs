@@ -20,4 +20,5 @@ public interface IWaitingTokenService
     Task<WaitingTokenViewModel?> GetCustomerWithLatestOrderAsync(string email);
     Task<bool> AddNewWaitingTokenAsyncSP(WaitingTokenViewModel model);
     Task<WaitingTokenViewModel> GetWaitingTokenByIdAsyncsp(int id);
+    Task<bool> UpdateWaitingTokenAsyncSP(WaitingTokenViewModel model);
 }
