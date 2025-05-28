@@ -326,5 +326,25 @@ public class WaitingTokenService : IWaitingTokenService
         return await _waitingTokenRepo.AssignCustomerToTablesSP(model.CustomerId ?? 0, model.TableIds!);
     }
 
+    public async Task<WaitingTokenViewModel> GetCustomerDetailsByIdSPAsync(int customerId)
+    {
+        var result = await _waitingTokenRepo.GetByIdUsingSPAsync(customerId);
+        var sections = await _sectionRepo.GetAllSectionsAsync();
+
+        if (result == null)
+            return new WaitingTokenViewModel();
+
+        return new WaitingTokenViewModel
+        {
+            WaitingTokenId = result.WaitingTokenId,
+            Email = result.Email,
+            Name = result.Name,
+            MobileNumber = result.MobileNumber,
+            NoOfPersons = result.NoOfPersons,
+            SectionId = result.SectionId,
+            Sections = sections,
+            CustomerId = result.CustomerId
+        };
+    }
 
 }

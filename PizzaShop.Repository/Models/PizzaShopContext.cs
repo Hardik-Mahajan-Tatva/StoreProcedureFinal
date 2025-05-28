@@ -16,7 +16,8 @@ public partial class PizzaShopContext : DbContext
     {
     }
     public DbSet<KOTFlatData> KOTFlatData { get; set; } = null!;
-    public DbSet<WaitingTokenViewModel> WaitingTokenViewModelRaw { get; set; } = null!;
+    public DbSet<WaitingTokenViewModelRaw> WaitingTokenViewModelRaw { get; set; } = null!;
+
 
     public virtual DbSet<Category> Categories { get; set; }
 
@@ -91,6 +92,7 @@ public partial class PizzaShopContext : DbContext
 
         modelBuilder.Entity<KOTFlatData>().HasNoKey();
         modelBuilder.Entity<WaitingTokenViewModel>().HasNoKey();
+        modelBuilder.Entity<WaitingTokenViewModelRaw>().HasNoKey();
         modelBuilder.Entity<Category>(entity =>
         {
             entity.HasKey(e => e.Categoryid).HasName("category_pkey");

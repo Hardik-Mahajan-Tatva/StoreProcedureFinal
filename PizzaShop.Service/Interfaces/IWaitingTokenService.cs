@@ -11,7 +11,7 @@ public interface IWaitingTokenService
     Task<bool> UpdateWaitingTokenAsync(WaitingTokenViewModel model);
     Task<bool> DeleteWaitingTokenAsync(int waitingTokenId);
     Task<List<WaitingTokenViewModel>> GetWaitingTokensBySectionsAsync(List<int> sectionIds);
-    Task<WaitingTokenViewModel> GetCustomerDetailsByIdAsync(int tokenId);
+    Task<WaitingTokenViewModel> GetCustomerDetailsByIdAsync(int customerId);
     Task<Waitingtoken?> GetWaitingTokenByCustomerIdAsync(int customerId);
     Task<bool> UpdateWaitingTokenStatusAsync(int customerId, bool status);
     Task<bool> IsMobileNumberExistsAsync(string mobileNumber);
@@ -22,4 +22,5 @@ public interface IWaitingTokenService
     Task<WaitingTokenViewModel> GetWaitingTokenByIdAsyncsp(int id);
     Task<bool> UpdateWaitingTokenAsyncSP(WaitingTokenViewModel model);
     Task<(bool IsSuccess, string Message, int OrderId)> AssignUsingSPAsync(AssignTableViewModel model);
+    Task<WaitingTokenViewModel> GetCustomerDetailsByIdSPAsync(int customerId);
 }

@@ -331,6 +331,19 @@ namespace PizzaShop.Repository.Implementations
         }
 
 
+        #region GetByIdUsingStoredProcedureAsync
+        public async Task<WaitingTokenViewModelRaw?> GetByIdUsingSPAsync(int customerId)
+        {
+            var result = await _context
+                .WaitingTokenViewModelRaw
+                .FromSqlInterpolated($"SELECT * FROM get_customer_details_by_id({customerId})")
+                .FirstOrDefaultAsync();
+
+            return result;
+        }
+        #endregion
+
+
 
 
 

@@ -291,7 +291,7 @@ namespace PizzaShop.Web.Controllers
         {
             try
             {
-                var customer = await _waitingTokenService.GetCustomerDetailsByIdAsync(customerId);
+                var customer = await _waitingTokenService.GetCustomerDetailsByIdSPAsync(customerId);
                 if (customer == null)
                 {
                     return Json(new { success = false, message = "No customer found" });
