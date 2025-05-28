@@ -66,7 +66,7 @@ namespace PizzaShop.Web.Controllers
         {
             try
             {
-                var sections = _sectionService.GetAll();
+                var sections = _sectionService.GetAllSectionsAsyncSP();
                 return Json(sections);
             }
             catch (Exception ex)
@@ -83,7 +83,7 @@ namespace PizzaShop.Web.Controllers
         {
             try
             {
-                var sections = await _sectionService.GetAllSectionsAsync();
+                var sections = await _sectionService.GetAllSectionsAsyncSP();
                 return Json(sections.Select(s => new { SectionId = s.SectionId, SectionName = s.SectionName }));
             }
             catch (Exception ex)
@@ -235,6 +235,55 @@ namespace PizzaShop.Web.Controllers
             }
         }
         #endregion
+        [HttpPost]
+        public async Task<IActionResult> AssignCustomerToOrderSP([FromBody] CustomerOrderViewModel model)
+        {
+            if (model == null)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "No data received."
+                });
+            }
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToList()
+                );
+
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Validation failed.",
+                    errors
+                });
+            }
+
+            try
+            {
+                var (isSuccess, message, orderId) = await _customerService.AssignCustomerOrderUsingStoredProcedureAsync(model);
+
+                return Ok(new
+                {
+                    success = isSuccess,
+                    message,
+                    orderId
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred while assigning the customer.",
+                    error = ex.Message
+                });
+            }
+        }
+
 
         #region SaveWaitingToken
         [CustomAuthorize]

@@ -1,11 +1,13 @@
 ﻿@using PizzaShop.Repository.Models
 @using PizzaShop.Service.Interfaces
 @using System.Security.Claims
+@using StackExchange.Profiling
 @inject IAuthService AuthService
 @inject IHttpContextAccessor HttpContextAccessor
 @inject PizzaShop.Service.Interfaces.IPermissionService PermissionService
 @inject IMyProfileService _profileService
 
+@MiniProfiler.Current.RenderIncludes(HttpContextAccessor.HttpContext)
 
 <!DOCTYPE html>
 <html lang="en">

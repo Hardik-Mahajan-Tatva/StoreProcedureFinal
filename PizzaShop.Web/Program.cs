@@ -31,6 +31,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddMiniProfiler(options =>
+{
+    options.RouteBasePath = "/profiler"; // URL to view results
+    options.ColorScheme = StackExchange.Profiling.ColorScheme.Light;
+}).AddEntityFramework();
+
 
 builder.Services.AddSession(options =>
 {
@@ -56,6 +62,8 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiniProfiler();
 
 app.UseStatusCodePagesWithReExecute("/Error/{0}");
 

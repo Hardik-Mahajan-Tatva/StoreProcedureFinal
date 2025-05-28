@@ -98,6 +98,7 @@ namespace PizzaShop.Service.Interfaces
         /// <param name="webRootPath">The root path of the web application for file storage.</param>
         /// <returns>A task that returns a file result containing the exported Excel file.</returns>
         Task<FileResult> ExportCustomersToExcel(string searchText, DateTime? startDate, DateTime? endDate, int? orderStatus, string sortColumn, string sortOrder, string webRootPath);
+        Task<(bool IsSuccess, string Message, int OrderId)> AssignCustomerOrderUsingStoredProcedureAsync(CustomerOrderViewModel model);
     }
 }
 

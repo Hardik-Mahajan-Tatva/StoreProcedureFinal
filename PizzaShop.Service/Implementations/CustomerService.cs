@@ -405,4 +405,26 @@ public class CustomerService : ICustomerService
         }
     }
 
+    public async Task<(bool IsSuccess, string Message, int OrderId)> AssignCustomerOrderUsingStoredProcedureAsync(CustomerOrderViewModel model)
+    {
+        if (model == null || string.IsNullOrWhiteSpace(model.Email))
+            return (false, "Email is required.", 0);
+
+        if (model.TableIds == null || !model.TableIds.Any())
+            return (false, "No tables selected.", 0);
+
+        // Call to Repository which executes the stored procedure
+        var (success, message, orderId) = await _customerRepository.AssignCustomerToOrderSPAsync(
+            model.Name ?? string.Empty,
+            model.Email,
+            model.MobileNumber ?? string.Empty,
+            model.NoOfPersons,
+            model.TableIds.ToArray()
+        );
+
+        return (success, message, orderId);
+    }
+
+
+
 }

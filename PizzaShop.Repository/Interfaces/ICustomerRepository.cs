@@ -113,5 +113,13 @@ namespace PizzaShop.Repository.Interfaces
         /// <param name="customerEmail">The email address of the customer.</param>
         /// <returns>The customer if found, otherwise null.</returns>
         Task<Customer?> GetCustomerByEmailAsync(string customerEmail);
+        Task<(bool Success, string Message, int OrderId)> AssignCustomerToOrderSPAsync(
+             string customerName,
+             string email,
+             string mobileNumber,
+             int noOfPersons,
+             int[] tableIds);
+
+
     }
 }

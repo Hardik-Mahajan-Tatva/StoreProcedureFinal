@@ -1,9 +1,10 @@
 @using PizzaShop.Service.Interfaces
 @using System.Security.Claims
+@using StackExchange.Profiling
 @inject IHttpContextAccessor HttpContextAccessor
 @inject IMyProfileService _profileService
 @inject PizzaShop.Service.Interfaces.IPermissionService PermissionService
-
+@MiniProfiler.Current.RenderIncludes(HttpContextAccessor.HttpContext)
 @{
     var context = HttpContextAccessor?.HttpContext;
     var user = context?.User;

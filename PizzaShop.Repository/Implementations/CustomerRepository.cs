@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using PizzaShop.Repository.Interfaces;
 using PizzaShop.Repository.Models;
 using PizzaShop.Repository.ViewModels;
@@ -197,5 +198,64 @@ namespace PizzaShop.Repository.Implementations
             );
         }
         #endregion
+
+        public async Task<(bool Success, string Message, int OrderId)> AssignCustomerToOrderSPAsync(
+     string customerName,
+     string email,
+     string mobileNumber,
+     int noOfPersons,
+     int[] tableIds)
+        {
+            await using var conn = _context.Database.GetDbConnection();
+            await conn.OpenAsync();
+
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = "assign_customer_to_order";
+            cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+            // Input parameters
+            var p_customer_name = new Npgsql.NpgsqlParameter("p_customer_name", customerName);
+            var p_email = new Npgsql.NpgsqlParameter("p_email", email);
+            var p_mobile_number = new Npgsql.NpgsqlParameter("p_mobile_number", mobileNumber);
+            var p_no_of_persons = new Npgsql.NpgsqlParameter("p_no_of_persons", noOfPersons);
+            var p_table_ids = new Npgsql.NpgsqlParameter("p_table_ids", NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Integer)
+            {
+                Value = tableIds
+            };
+
+            // Output parameters
+            var p_success = new Npgsql.NpgsqlParameter("p_success", System.Data.DbType.Boolean)
+            {
+                Direction = System.Data.ParameterDirection.Output
+            };
+            var p_message = new Npgsql.NpgsqlParameter("p_message", System.Data.DbType.String, 4000)
+            {
+                Direction = System.Data.ParameterDirection.Output
+            };
+            var p_order_id = new Npgsql.NpgsqlParameter("p_order_id", System.Data.DbType.Int32)
+            {
+                Direction = System.Data.ParameterDirection.Output
+            };
+
+            cmd.Parameters.Add(p_customer_name);
+            cmd.Parameters.Add(p_email);
+            cmd.Parameters.Add(p_mobile_number);
+            cmd.Parameters.Add(p_no_of_persons);
+            cmd.Parameters.Add(p_table_ids);
+            cmd.Parameters.Add(p_success);
+            cmd.Parameters.Add(p_message);
+            cmd.Parameters.Add(p_order_id);
+
+            await cmd.ExecuteNonQueryAsync();
+
+            bool success = (bool)p_success.Value!;
+            string message = p_message.Value!.ToString() ?? "";
+            int orderId = p_order_id.Value != DBNull.Value ? (int)p_order_id.Value! : 0;
+
+            return (success, message, orderId);
+        }
+
+
+
     }
 }
