@@ -121,6 +121,8 @@ namespace PizzaShop.Repository.Implementations
         }
         #endregion
 
+
+
         #region GetSectionsWithTablesAsync
         public async Task<List<Section>> GetSectionsWithTablesAsync()
         {
@@ -278,6 +280,11 @@ namespace PizzaShop.Repository.Implementations
             return tables;
         }
         #endregion
+        public async Task<List<TableViewRawModel>> GetTableViewFromFunctionAsync()
+        {
+            var sql = "SELECT * FROM get_table_view_data()";
+            return await _context.TableViewRawModels.FromSqlRaw(sql).ToListAsync();
+        }
 
 
     }

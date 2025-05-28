@@ -211,6 +211,47 @@ namespace PizzaShop.Service.Implementations
         {
             return await _tableRepository.GetTablesBySectionsUsingFunctionAsync(sectionIds);
         }
+        public async Task<List<TableViewModel>> GetTablesBySectionSPAsync()
+        {
+            var rawTables = await _tableRepository.GetTableViewFromFunctionAsync();
+
+            return rawTables.Select(t =>
+            {
+                var tableStatus = (TableStatus)(t.TableStatus);
+                if (tableStatus == TableStatus.Occupied)
+                {
+                    if (t.OrderId.HasValue && t.OrderStatus.HasValue)
+                    {
+                        switch (t.OrderStatus.Value)
+                        {
+                            case (int)OrderStatus.Pending:
+                                tableStatus = TableStatus.Occupied;
+                                break;
+                            case (int)OrderStatus.InProgress:
+                            case (int)OrderStatus.Served:
+                                tableStatus = TableStatus.Running;
+                                break;
+                            default:
+                                tableStatus = TableStatus.Occupied;
+                                break;
+                        }
+                    }
+                }
+
+                return new TableViewModel
+                {
+                    SectionId = t.SectionId,
+                    TableId = t.TableId,
+                    TableName = t.TableName,
+                    SelectedSectionName = t.SectionName,
+                    Status = tableStatus,
+                    Capacity = t.Capacity,
+                    OccupiedStartTime = t.ModifiedAt,
+                    OrderId = t.OrderId,
+                    TotoaAmount = t.TotalAmount ?? 0
+                };
+            }).ToList();
+        }
 
     }
 }

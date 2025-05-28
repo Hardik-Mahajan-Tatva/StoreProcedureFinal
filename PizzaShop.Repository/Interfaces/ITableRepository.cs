@@ -146,5 +146,6 @@ namespace PizzaShop.Repository.Interfaces
         void DeleteMultipleTableAsync(List<int> itemIds);
 
         Task<List<TableViewModel>> GetTablesBySectionsUsingFunctionAsync(List<int> sectionIds);
+        Task<List<TableViewRawModel>> GetTableViewFromFunctionAsync();
     }
 }

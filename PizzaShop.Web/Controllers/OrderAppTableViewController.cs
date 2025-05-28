@@ -49,7 +49,8 @@ namespace PizzaShop.Web.Controllers
         {
             try
             {
-                var tables = await _tableService.GetTablesBySectionAsync();
+                // var tables = await _tableService.GetTablesBySectionAsync();
+                var tables = await _tableService.GetTablesBySectionSPAsync();
                 return PartialView("_TableViewPartial", tables);
             }
             catch (Exception ex)
