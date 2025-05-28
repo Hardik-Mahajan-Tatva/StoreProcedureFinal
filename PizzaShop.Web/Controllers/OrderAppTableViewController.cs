@@ -254,7 +254,7 @@ namespace PizzaShop.Web.Controllers
             }
             try
             {
-                var result = await _waitingTokenService.AddNewWaitingTokenAsync(model);
+                var result = await _waitingTokenService.AddNewWaitingTokenAsyncSP(model);
                 if (result)
                     return Json(new { success = true, message = "Waiting token added successfully." });
 
