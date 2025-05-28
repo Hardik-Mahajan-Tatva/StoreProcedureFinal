@@ -110,5 +110,6 @@ namespace PizzaShop.Repository.Interfaces
         Task<bool> UpdateCustomerAndWaitingTokenUsingSPAsync(WaitingTokenViewModel model);
         Task<(bool IsSuccess, string Message, int OrderId)> AssignCustomerToTablesSP(int customerId, List<int> tableIds);
         Task<WaitingTokenViewModelRaw?> GetByIdUsingSPAsync(int customerId);
+        Task<List<WaitingTokenViewModelRawList>> GetTokensBySectionsSPAsync(List<int> sectionIds);
     }
 }

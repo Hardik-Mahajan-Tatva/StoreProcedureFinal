@@ -343,6 +343,19 @@ namespace PizzaShop.Repository.Implementations
         }
         #endregion
 
+        public async Task<List<WaitingTokenViewModelRawList>> GetTokensBySectionsSPAsync(List<int> sectionIds)
+        {
+            if (sectionIds == null || sectionIds.Count == 0)
+                return new List<WaitingTokenViewModelRawList>();
+
+            var ids = string.Join(",", sectionIds);
+
+            return await _context.WaitingTokenViewModelRawList
+                .FromSqlRaw($"SELECT * FROM get_waiting_tokens_by_sections_tableview(ARRAY[{ids}]::INT[])")
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
 
 
 

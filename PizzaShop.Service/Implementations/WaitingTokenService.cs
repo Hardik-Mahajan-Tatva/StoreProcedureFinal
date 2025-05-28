@@ -228,14 +228,14 @@ public class WaitingTokenService : IWaitingTokenService
 
     public async Task<List<WaitingTokenViewModel>> GetWaitingTokensBySectionsAsync(List<int> sectionIds)
     {
-        var tokens = await _waitingTokenRepo.GetTokensBySectionsAsync(sectionIds);
+        var tokens = await _waitingTokenRepo.GetTokensBySectionsSPAsync(sectionIds);
 
         return tokens.Select(t => new WaitingTokenViewModel
         {
-            WaitingTokenId = t.Waitingtokenid,
-            CustomerId = t.Customerid,
-            Name = t.Customer.Customername,
-            NoOfPersons = t.Noofpeople
+            WaitingTokenId = t.WaitingTokenId,
+            CustomerId = t.CustomerId,
+            Name = t.Name,
+            NoOfPersons = t.NoOfPersons
         }).ToList();
     }
 

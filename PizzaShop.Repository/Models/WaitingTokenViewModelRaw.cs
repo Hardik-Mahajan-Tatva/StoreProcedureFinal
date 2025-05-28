@@ -3,7 +3,7 @@ namespace PizzaShop.Repository.Models
     using System.ComponentModel.DataAnnotations.Schema;
     using Microsoft.EntityFrameworkCore;
 
-    [Keyless] // Important
+    [Keyless]
     public class WaitingTokenViewModelRaw
     {
         [Column("waiting_token_id")]
