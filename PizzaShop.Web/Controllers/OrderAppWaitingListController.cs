@@ -305,6 +305,22 @@ namespace PizzaShop.Web.Controllers
         }
         #endregion
 
+        // #region AssignSelectedTablesToWaitingCustomer
+        // [CustomAuthorize]
+        // [HttpPost]
+        // public async Task<IActionResult> AssignSelectedTablesToWaitingCustomer(AssignTableViewModel model)
+        // {
+        //     try
+        //     {
+        //         var (IsSuccess, Message, orderId) = await _assignService.AssignWaitinCustomerSelectedTableAndSectionAsync(model);
+        //         return Json(new { isSuccess = IsSuccess, message = Message, orderId = orderId });
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         return Json(new { success = false, message = ex.Message });
+        //     }
+        // }
+        // #endregion
         #region AssignSelectedTablesToWaitingCustomer
         [CustomAuthorize]
         [HttpPost]
@@ -312,7 +328,7 @@ namespace PizzaShop.Web.Controllers
         {
             try
             {
-                var (IsSuccess, Message, orderId) = await _assignService.AssignWaitinCustomerSelectedTableAndSectionAsync(model);
+                var (IsSuccess, Message, orderId) = await _waitingTokenService.AssignUsingSPAsync(model);
                 return Json(new { isSuccess = IsSuccess, message = Message, orderId = orderId });
             }
             catch (Exception ex)
@@ -321,5 +337,6 @@ namespace PizzaShop.Web.Controllers
             }
         }
         #endregion
+
     }
 }

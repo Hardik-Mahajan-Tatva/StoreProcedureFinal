@@ -293,12 +293,42 @@ namespace PizzaShop.Repository.Implementations
                 command.Parameters.Add(new Npgsql.NpgsqlParameter("@sectionId", model.SectionId ?? 0));
 
                 var rowsAffected = await command.ExecuteNonQueryAsync();
-                return true; // assume procedure does the right job
+                return true;
             }
         }
         #endregion
 
 
+        public async Task<(bool IsSuccess, string Message, int OrderId)> AssignCustomerToTablesSP(int customerId, List<int> tableIds)
+        {
+            var connection = _context.Database.GetDbConnection();
+            await using (connection)
+            {
+                await connection.OpenAsync();
+                await using var command = connection.CreateCommand();
+                command.CommandText = "assign_customer_to_tables_proc";
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.Add(new Npgsql.NpgsqlParameter("p_customer_id", customerId));
+                command.Parameters.Add(new Npgsql.NpgsqlParameter("p_table_ids", tableIds.ToArray()));
+
+                var outputOrderIdParam = new Npgsql.NpgsqlParameter("order_id", DbType.Int32)
+                {
+                    Direction = ParameterDirection.Output
+                };
+                command.Parameters.Add(outputOrderIdParam);
+
+
+                await command.ExecuteNonQueryAsync();
+
+                int orderId = (int)(outputOrderIdParam.Value ?? 0);
+                bool isSuccess = orderId > 0;
+                string message = isSuccess ? "Assignment successful." : "Assignment failed.";
+
+                return (isSuccess, message, orderId);
+
+            }
+        }
 
 
 

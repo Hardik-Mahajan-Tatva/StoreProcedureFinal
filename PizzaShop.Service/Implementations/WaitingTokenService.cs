@@ -321,5 +321,10 @@ public class WaitingTokenService : IWaitingTokenService
         return await _waitingTokenRepo.UpdateCustomerAndWaitingTokenUsingSPAsync(model);
     }
 
+    public async Task<(bool IsSuccess, string Message, int OrderId)> AssignUsingSPAsync(AssignTableViewModel model)
+    {
+        return await _waitingTokenRepo.AssignCustomerToTablesSP(model.CustomerId ?? 0, model.TableIds!);
+    }
+
 
 }

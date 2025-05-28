@@ -6,5 +6,6 @@ namespace PizzaShop.Repository.ViewModels
         public List<int> SelectedSectionIds { get; set; } = new();
         public int? CustomerId { get; set; }
         public List<int>? TableIds { get; set; }
+        public int? NoOfPersons { get; set; } = 1;
     }
 }

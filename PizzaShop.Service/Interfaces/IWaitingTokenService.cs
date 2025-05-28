@@ -21,4 +21,5 @@ public interface IWaitingTokenService
     Task<bool> AddNewWaitingTokenAsyncSP(WaitingTokenViewModel model);
     Task<WaitingTokenViewModel> GetWaitingTokenByIdAsyncsp(int id);
     Task<bool> UpdateWaitingTokenAsyncSP(WaitingTokenViewModel model);
+    Task<(bool IsSuccess, string Message, int OrderId)> AssignUsingSPAsync(AssignTableViewModel model);
 }
