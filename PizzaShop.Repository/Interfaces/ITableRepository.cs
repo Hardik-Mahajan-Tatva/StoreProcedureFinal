@@ -1,4 +1,5 @@
 using PizzaShop.Repository.Models;
+using PizzaShop.Repository.ViewModels;
 
 namespace PizzaShop.Repository.Interfaces
 {
@@ -143,5 +144,7 @@ namespace PizzaShop.Repository.Interfaces
         /// </summary>
         /// <param name="itemIds">The list of table IDs to soft delete.</param>
         void DeleteMultipleTableAsync(List<int> itemIds);
+
+        Task<List<TableViewModel>> GetTablesBySectionsUsingFunctionAsync(List<int> sectionIds);
     }
 }

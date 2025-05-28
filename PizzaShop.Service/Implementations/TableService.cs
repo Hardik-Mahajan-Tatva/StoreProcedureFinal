@@ -207,6 +207,11 @@ namespace PizzaShop.Service.Implementations
         {
             _tableRepository.DeleteMultipleTableAsync(tableIds);
         }
+        public async Task<List<TableViewModel>> GetTablesBySectionsUsingFunctionAsync(List<int> sectionIds)
+        {
+            return await _tableRepository.GetTablesBySectionsUsingFunctionAsync(sectionIds);
+        }
+
     }
 }
 

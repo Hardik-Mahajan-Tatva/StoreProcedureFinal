@@ -213,7 +213,7 @@ namespace PizzaShop.Web.Controllers
         {
             try
             {
-                var sections = await _sectionService.GetAllSectionsAsync();
+                var sections = await _sectionService.GetAllSectionsAsyncSP();
                 var viewModel = new AssignTableViewModel
                 {
                     CustomerId = customerId,
@@ -241,13 +241,13 @@ namespace PizzaShop.Web.Controllers
         {
             try
             {
-                var tables = await _tableService.GetTablesBySectionsAsync(sectionIds);
+                var tables = await _tableService.GetTablesBySectionsUsingFunctionAsync(sectionIds);
                 var result = tables.Select(t => new
                 {
-                    TableId = t.Tableid,
-                    TableName = t.Tablename,
-                    TableStatus = t.Tablestatus,
-                    SectionName = t.Section?.Sectionname
+                    TableId = t.TableId,
+                    TableName = t.TableName,
+                    TableStatus = t.Status,
+                    SectionName = t.SelectedSectionName
                 });
                 return Json(result);
             }

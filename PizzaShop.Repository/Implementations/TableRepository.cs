@@ -1,6 +1,8 @@
+using System.Data;
 using Microsoft.EntityFrameworkCore;
 using PizzaShop.Repository.Interfaces;
 using PizzaShop.Repository.Models;
+using PizzaShop.Repository.ViewModels;
 using Table = PizzaShop.Repository.Models.Table;
 
 namespace PizzaShop.Repository.Implementations
@@ -204,6 +206,7 @@ namespace PizzaShop.Repository.Implementations
         }
         #endregion
 
+
         #region GetTablesByIdsAsync
         public async Task<List<Table>> GetTablesByIdsAsync(List<int> tableIds)
         {
@@ -237,6 +240,46 @@ namespace PizzaShop.Repository.Implementations
             }
         }
         #endregion
+
+        #region GetTablesBySectionsUsingFunctionAsync
+        public async Task<List<TableViewModel>> GetTablesBySectionsUsingFunctionAsync(List<int> sectionIds)
+        {
+            var tables = new List<TableViewModel>();
+            var connection = _context.Database.GetDbConnection();
+            var sectionIdArray = sectionIds.ToArray();
+
+            await using (connection)
+            {
+                await connection.OpenAsync();
+                using var command = connection.CreateCommand();
+
+                command.CommandText = "SELECT * FROM get_tables_by_section_ids(@section_ids)";
+                command.CommandType = CommandType.Text;
+
+                var param = new Npgsql.NpgsqlParameter("@section_ids", NpgsqlTypes.NpgsqlDbType.Array | NpgsqlTypes.NpgsqlDbType.Integer)
+                {
+                    Value = sectionIdArray
+                };
+                command.Parameters.Add(param);
+
+                using var reader = await command.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    tables.Add(new TableViewModel
+                    {
+                        TableId = reader.GetInt32(0),
+                        TableName = reader.GetString(1),
+                        Status = (TableStatus)reader.GetInt32(2),
+                        SelectedSectionName = reader.GetString(3)
+                    });
+                }
+            }
+            return tables;
+        }
+        #endregion
+
+
     }
 }
 

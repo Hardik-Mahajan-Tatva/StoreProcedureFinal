@@ -111,5 +111,7 @@ namespace PizzaShop.Service.Interfaces
         /// </summary>
         /// <param name="itemIds">The list of table IDs to soft delete.</param>
         void DeleteMultipleTableAsync(List<int> tableIds);
+
+        Task<List<TableViewModel>> GetTablesBySectionsUsingFunctionAsync(List<int> sectionIds);
     }
 }
