@@ -63,6 +63,7 @@ namespace PizzaShop.Web.Controllers
 
                 // var categories = await _categoryService.GetAll();
                 var categories = await _categoryService.GetAllSP();
+                // var items = _itemService.GetAllItems();
                 var items = _itemService.GetAllItemsSP();
 
                 OrderInvoiceViewModel customerSummary = new();
@@ -98,8 +99,8 @@ namespace PizzaShop.Web.Controllers
         {
             try
             {
-                var categories = await _categoryService.GetAll();
-                var items = _itemService.GetAllItems();
+                var categories = await _categoryService.GetAllSP();
+                var items = await _itemService.GetAllItemsSP();
                 ViewBag.Items = items;
                 ViewBag.OrderId = orderId;
 
@@ -113,6 +114,51 @@ namespace PizzaShop.Web.Controllers
         }
         #endregion
 
+        // #region GetItemModifiers
+        // [CustomAuthorize]
+        // [HttpGet]
+        // public async Task<IActionResult> GetItemModifiers(int itemId)
+        // {
+        //     try
+        //     {
+        //         var modifierGroupMappings = await _itemModifierGroupMapService.GetMappingByItemIdAsync(itemId);
+        //         foreach (var groupMapping in modifierGroupMappings)
+        //         {
+        //             var modifierGroup = await _modifiergroupService.GetModifierGroupByIdAsync(groupMapping.ModifierGroupId);
+
+        //             if (modifierGroup != null)
+        //             {
+        //                 groupMapping.ModifierGroupName = modifierGroup.ModifierGroupName;
+
+        //                 if (groupMapping.ModifierItems == null || !groupMapping.ModifierItems.Any())
+        //                 {
+        //                     if (modifierGroup.ModifierItems != null)
+        //                     {
+        //                         groupMapping.ModifierItems = modifierGroup.ModifierItems.Select(item => new ModifierItemViewModel
+        //                         {
+        //                             OrderedItemId = item.OrderedItemId,
+        //                             ModifierItemId = item.ModifierItemId,
+        //                             ModifierItemName = item.ModifierItemName,
+        //                             Price = item.Price,
+        //                             ModifierType = item.ModifierType ?? default
+        //                         }).ToList();
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //         var item = await _itemModifierGroupMapService.GetMappingByItemIdAsync(itemId);
+
+        //         if (item == null)
+        //             return Json(new { success = false, message = "Item not found" });
+
+        //         return PartialView("_ModifierGroupsPartial", modifierGroupMappings);
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         return Json(new { success = false, message = ex.Message });
+        //     }
+        // }
+        // #endregion
         #region GetItemModifiers
         [CustomAuthorize]
         [HttpGet]
@@ -120,34 +166,9 @@ namespace PizzaShop.Web.Controllers
         {
             try
             {
-                var modifierGroupMappings = await _itemModifierGroupMapService.GetMappingByItemIdAsync(itemId);
-                foreach (var groupMapping in modifierGroupMappings)
-                {
-                    var modifierGroup = await _modifiergroupService.GetModifierGroupByIdAsync(groupMapping.ModifierGroupId);
+                var modifierGroupMappings = await _modifiergroupService.GetMappingByItemIdSPAsync(itemId);
 
-                    if (modifierGroup != null)
-                    {
-                        groupMapping.ModifierGroupName = modifierGroup.ModifierGroupName;
-
-                        if (groupMapping.ModifierItems == null || !groupMapping.ModifierItems.Any())
-                        {
-                            if (modifierGroup.ModifierItems != null)
-                            {
-                                groupMapping.ModifierItems = modifierGroup.ModifierItems.Select(item => new ModifierItemViewModel
-                                {
-                                    OrderedItemId = item.OrderedItemId,
-                                    ModifierItemId = item.ModifierItemId,
-                                    ModifierItemName = item.ModifierItemName,
-                                    Price = item.Price,
-                                    ModifierType = item.ModifierType ?? default
-                                }).ToList();
-                            }
-                        }
-                    }
-                }
-                var item = await _itemModifierGroupMapService.GetMappingByItemIdAsync(itemId);
-
-                if (item == null)
+                if (modifierGroupMappings == null || !modifierGroupMappings.Any())
                     return Json(new { success = false, message = "Item not found" });
 
                 return PartialView("_ModifierGroupsPartial", modifierGroupMappings);
@@ -157,6 +178,7 @@ namespace PizzaShop.Web.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
         #endregion
 
         #region LoadCustomerSummary

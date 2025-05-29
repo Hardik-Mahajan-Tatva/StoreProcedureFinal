@@ -66,6 +66,8 @@ namespace PizzaShop.Service.Interfaces
     /// <param name="name">The name of the modifier group to check.</param>
     /// <returns>A task that returns true if the name exists, otherwise false.</returns>
     Task<bool> ModifierGroupNameExistsAsync(string name);
+
+    Task<List<ItemModifierGroupMapViewModel>> GetMappingByItemIdSPAsync(int itemId);
   }
 }
 

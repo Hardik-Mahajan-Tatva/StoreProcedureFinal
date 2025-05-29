@@ -203,7 +203,7 @@
             type: 'GET',
             data: { itemId: itemId },
             success: function (html) {
-                if (html.trim() === "") {
+                if (html.success == false) {
                     $('#modifierModalBody').html("<p>No Modifiers Available</p>");
                 } else {
                     $('#modifierModalBody').html(html);

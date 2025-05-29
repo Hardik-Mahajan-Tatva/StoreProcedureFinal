@@ -1,6 +1,8 @@
 using PizzaShop.Repository.Models;
 using Pizzashop.Repository.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using PizzaShop.Repository.ViewModels;
+using Npgsql;
 
 namespace Pizzashop.Repository.Implementations
 {
@@ -183,5 +185,66 @@ namespace Pizzashop.Repository.Implementations
             );
         }
         #endregion
+
+
+        public async Task<List<ItemModifierGroupMapRaw>> GetMappingByItemIdSPAsync(int itemId)
+        {
+            try
+            {
+                var itemIdParam = new NpgsqlParameter("item_id_input", itemId);
+
+                var result = await _context
+                    .ItemModifierGroupMapRaw
+                    .FromSqlRaw("SELECT * FROM get_item_modifier_group_mappings(@item_id_input)", itemIdParam)
+                    .ToListAsync();
+
+                return result;
+            }
+            catch (PostgresException pgEx)
+            {
+                // PostgreSQL-specific errors
+                Console.WriteLine("PostgreSQL error occurred:");
+                Console.WriteLine($"Message: {pgEx.Message}");
+                Console.WriteLine($"Detail: {pgEx.Detail}");
+                Console.WriteLine($"Where: {pgEx.Where}");
+                Console.WriteLine($"Code: {pgEx.SqlState}");
+                throw;
+            }
+            catch (DbUpdateException dbEx)
+            {
+                // Entity Framework DB update issues
+                Console.WriteLine("EF Core DB update error occurred:");
+                Console.WriteLine($"Message: {dbEx.Message}");
+                if (dbEx.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {dbEx.InnerException.Message}");
+                }
+                throw;
+            }
+            catch (InvalidOperationException invEx)
+            {
+                // Invalid ops like mapping problems
+                Console.WriteLine("Invalid operation:");
+                Console.WriteLine($"Message: {invEx.Message}");
+                if (invEx.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {invEx.InnerException.Message}");
+                }
+                throw;
+            }
+            catch (Exception ex)
+            {
+                // General fallback
+                Console.WriteLine("An unknown error occurred:");
+                Console.WriteLine($"Message: {ex.Message}");
+                if (ex.InnerException != null)
+                {
+                    Console.WriteLine($"Inner Exception: {ex.InnerException.Message}");
+                }
+                throw;
+            }
+        }
+
+
     }
 }

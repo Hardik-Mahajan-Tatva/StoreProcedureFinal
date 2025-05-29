@@ -1,4 +1,5 @@
 using PizzaShop.Repository.Models;
+using PizzaShop.Repository.ViewModels;
 
 namespace Pizzashop.Repository.Interfaces
 {
@@ -88,6 +89,8 @@ namespace Pizzashop.Repository.Interfaces
         /// <param name="excludeId">The ID of the modifier group to exclude from the check.</param>
         /// <returns>A task that returns true if the name exists, otherwise false.</returns>
         Task<bool> ModifierGroupNameExistsAsync(string modifierGroupName, int excludeId);
+
+        Task<List<ItemModifierGroupMapRaw>> GetMappingByItemIdSPAsync(int itemId);
     }
 }
 

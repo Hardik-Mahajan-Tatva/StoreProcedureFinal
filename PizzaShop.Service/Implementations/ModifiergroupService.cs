@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Pizzashop.Repository.Interfaces;
 using PizzaShop.Repository.Models;
 using PizzaShop.Repository.ViewModels;
@@ -141,6 +142,25 @@ namespace PizzaShop.Service.Implementations
         {
             return await _modifiergoupRepository.ModifierGroupNameExistsAsync(name);
         }
+
+
+        public async Task<List<ItemModifierGroupMapViewModel>> GetMappingByItemIdSPAsync(int itemId)
+        {
+            var rawResults = await _modifiergoupRepository.GetMappingByItemIdSPAsync(itemId);
+
+            var mapped = rawResults.Select(r => new ItemModifierGroupMapViewModel
+            {
+                ItemId = r.ItemId,
+                ModifierGroupId = r.ModifierGroupId,
+                ModifierGroupName = r.ModifierGroupName,
+                MinValue = r.MinValue,
+                MaxValue = r.MaxValue,
+                ModifierItems = JsonSerializer.Deserialize<List<ModifierItemViewModel>>(r.ModifierItems) ?? new()
+            }).ToList();
+
+            return mapped;
+        }
+
 
     }
 }
