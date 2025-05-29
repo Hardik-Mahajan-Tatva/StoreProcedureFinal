@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using PizzaShop.Repository.Models;
 using Pizzashop.Repository.Interfaces;
 using PizzaShop.Repository.ViewModels;
+using System.Threading.Tasks;
 
 namespace Pizzashop.Repository.Implementations
 {
@@ -255,7 +256,17 @@ namespace Pizzashop.Repository.Implementations
                 .ToListAsync();
         }
         #endregion
-        
+
+        #region GetAllSP
+        public async Task<IQueryable<Item>> GetAllSP()
+        {
+
+            var listItems = await _context.Items
+        .FromSqlRaw("SELECT * FROM get_all_items()")
+        .ToListAsync();
+            return listItems.AsQueryable();
+        }
+        #endregion
     }
 }
 

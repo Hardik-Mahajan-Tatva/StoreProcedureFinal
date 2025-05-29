@@ -119,6 +119,7 @@ namespace PizzaShop.Service.Interfaces
         /// <param name="categoryId">The ID of the category to retrieve item IDs for.</param>
         /// <returns>A task that returns a list of item IDs.</returns>
         Task<List<int>> GetAllItemIds(int categoryId);
+        Task<IQueryable<Item>> GetAllItemsSP();
     }
 }
 

@@ -61,8 +61,9 @@ namespace PizzaShop.Web.Controllers
                     validOrderId = parsedOrderId;
                 }
 
-                var categories = await _categoryService.GetAll();
-                var items = _itemService.GetAllItems();
+                // var categories = await _categoryService.GetAll();
+                var categories = await _categoryService.GetAllSP();
+                var items = _itemService.GetAllItemsSP();
 
                 OrderInvoiceViewModel customerSummary = new();
                 if (validOrderId != null)

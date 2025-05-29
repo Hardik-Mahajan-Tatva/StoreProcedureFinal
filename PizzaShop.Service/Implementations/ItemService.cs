@@ -124,6 +124,7 @@ namespace PizzaShop.Service.Implementations
             return _itemRepository.GetAll();
         }
 
+
         public IQueryable<Item> GetItemsByCategoryIdPaginated(int categoryId)
         {
             IQueryable<Item>? item = _itemRepository.GetItemsByCategoryIdPaginated(categoryId);
@@ -179,6 +180,9 @@ namespace PizzaShop.Service.Implementations
             return await _itemRepository.GetAllItemIds(categoryId);
         }
 
-
+        public async Task<IQueryable<Item>> GetAllItemsSP()
+        {
+            return await _itemRepository.GetAllSP();
+        }
     }
 }

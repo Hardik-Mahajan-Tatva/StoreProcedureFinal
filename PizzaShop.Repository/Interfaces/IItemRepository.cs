@@ -127,6 +127,7 @@ namespace Pizzashop.Repository.Interfaces
         /// <param name="categoryId">The ID of the category who's items needed.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task<List<int>> GetAllItemIds(int categoryId);
+        Task<IQueryable<Item>> GetAllSP();
     }
 }
 
