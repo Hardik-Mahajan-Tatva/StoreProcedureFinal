@@ -137,17 +137,19 @@ public class CustomerService : ICustomerService
     }
     public async Task<CustomerUpdateViewModal?> GetCustomerDetails(int customerId)
     {
-        var customer = await _customerRepository.GetCustomerWithLatestOrderAsync(customerId);
+        // var customer = await _customerRepository.GetCustomerWithLatestOrderAsync(customerId);
+        var customer = await _customerRepository.GetCustomerWithLatestOrderSPAsync(customerId);
 
         if (customer == null) return null;
 
-        var latestOrder = customer.Orders.FirstOrDefault();
+        // var latestOrder = customer.Orders.FirstOrDefault();
 
         return new CustomerUpdateViewModal
         {
-            CustomerName = customer.Customername,
-            PhoneNumber = customer.Phoneno,
-            NumberOfPersons = latestOrder?.Noofperson ?? 0,
+            CustomerId = customer.CustomerId,
+            CustomerName = customer.CustomerName,
+            PhoneNumber = customer.PhoneNumber,
+            NumberOfPersons = customer.NumberOfPersons,
             Email = customer.Email
         };
     }

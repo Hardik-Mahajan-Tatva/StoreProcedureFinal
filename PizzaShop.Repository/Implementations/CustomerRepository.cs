@@ -255,6 +255,21 @@ namespace PizzaShop.Repository.Implementations
             return (success, message, orderId);
         }
 
+        #region GetCustomerWithLatestOrderSPAsync
+        public async Task<CustomerUpdateRaw?> GetCustomerWithLatestOrderSPAsync(int customerId)
+        {
+
+            var param = new NpgsqlParameter("customer_id", customerId);
+
+            CustomerUpdateRaw? customer = await _context.CustomerUpdateRaw
+                .FromSqlRaw("SELECT * FROM get_customer_with_latest_order(@customer_id)", param)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            return customer;
+
+        }
+        #endregion
 
 
     }

@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using PizzaShop.Repository.ViewModels;
@@ -63,11 +64,11 @@ namespace PizzaShop.Web.Controllers
         #region GetSections
         [CustomAuthorize]
         [HttpGet]
-        public JsonResult GetSections()
+        public async Task<JsonResult> GetSections()
         {
             try
             {
-                var sections = _sectionService.GetAllSectionsAsyncSP();
+                var sections = await _sectionService.GetAllSectionsAsyncSP();
                 return Json(sections);
             }
             catch (Exception ex)

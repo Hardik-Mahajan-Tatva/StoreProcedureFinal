@@ -120,6 +120,6 @@ namespace PizzaShop.Repository.Interfaces
              int noOfPersons,
              int[] tableIds);
 
-
+        Task<CustomerUpdateRaw?> GetCustomerWithLatestOrderSPAsync(int customerId);
     }
 }

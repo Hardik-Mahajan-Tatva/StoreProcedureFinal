@@ -20,6 +20,7 @@ public partial class PizzaShopContext : DbContext
     public DbSet<WaitingTokenViewModelRawList> WaitingTokenViewModelRawList { get; set; } = null!;
     public DbSet<TableViewRawModel> TableViewRawModels { get; set; } = null!;
     public DbSet<ItemModifierGroupMapRaw> ItemModifierGroupMapRaw { get; set; } = null!;
+    public DbSet<CustomerUpdateRaw> CustomerUpdateRaw { get; set; } = null!;
 
 
     public virtual DbSet<Category> Categories { get; set; }
@@ -99,6 +100,7 @@ public partial class PizzaShopContext : DbContext
         modelBuilder.Entity<WaitingTokenViewModelRawList>().HasNoKey();
         modelBuilder.Entity<TableViewRawModel>().HasNoKey();
         modelBuilder.Entity<ItemModifierGroupMapRaw>().HasNoKey();
+        modelBuilder.Entity<CustomerUpdateRaw>().HasNoKey();
         modelBuilder.Entity<Category>(entity =>
         {
             entity.HasKey(e => e.Categoryid).HasName("category_pkey");
