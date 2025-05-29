@@ -427,6 +427,26 @@ public class CustomerService : ICustomerService
         return (success, message, orderId);
     }
 
+    public async Task<bool> UpdateSPAsync(CustomerUpdateViewModal customer)
+    {
+        var (success, errorMessage) = await _customerRepository.UpdateCustomerAndOrdersSPAsync(customer);
+        if (!success)
+        {
+            if (errorMessage == "Duplicate email")
+            {
+                throw new InvalidOperationException(errorMessage);
+            }
+            else
+            {
+                // You can handle other errors here or throw a generic error
+                throw new Exception(errorMessage);
+            }
+        }
+        return true;
+    }
+
+
+
 
 
 }

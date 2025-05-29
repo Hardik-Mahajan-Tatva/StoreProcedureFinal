@@ -272,5 +272,40 @@ namespace PizzaShop.Repository.Implementations
         #endregion
 
 
+        #region UpdateCustomerAndOrdersSPAsync
+        public async Task<(bool Success, string ErrorMessage)> UpdateCustomerAndOrdersSPAsync(CustomerUpdateViewModal customer)
+        {
+            var numberOfPersons = (short)(customer.NumberOfPersons ?? 0);
+            var parameters = new[]
+            {
+        new Npgsql.NpgsqlParameter("p_customer_id", customer.CustomerId),
+        new Npgsql.NpgsqlParameter("p_customer_name", customer.CustomerName),
+        new Npgsql.NpgsqlParameter("p_phone_number", customer.PhoneNumber),
+        new Npgsql.NpgsqlParameter("p_email", customer.Email),
+        new Npgsql.NpgsqlParameter("p_number_of_persons", numberOfPersons)
+    };
+
+            try
+            {
+                await _context.Database.ExecuteSqlRawAsync(
+                    "CALL update_customer_and_orders(@p_customer_id, @p_customer_name, @p_phone_number, @p_email, @p_number_of_persons);",
+                    parameters
+                );
+
+                return (true, null);
+            }
+            catch (PostgresException pgEx) when (pgEx.Message.Contains("Duplicate email"))
+            {
+                return (false, "Duplicate email");
+            }
+            catch (Exception ex)
+            {
+                // Log error as needed
+                return (false, "Unexpected error");
+            }
+        }
+        #endregion
+
+
     }
 }

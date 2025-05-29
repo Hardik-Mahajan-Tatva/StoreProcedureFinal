@@ -99,6 +99,8 @@ namespace PizzaShop.Service.Interfaces
         /// <returns>A task that returns a file result containing the exported Excel file.</returns>
         Task<FileResult> ExportCustomersToExcel(string searchText, DateTime? startDate, DateTime? endDate, int? orderStatus, string sortColumn, string sortOrder, string webRootPath);
         Task<(bool IsSuccess, string Message, int OrderId)> AssignCustomerOrderUsingStoredProcedureAsync(CustomerOrderViewModel model);
+
+        Task<bool> UpdateSPAsync(CustomerUpdateViewModal customer);
     }
 }
 

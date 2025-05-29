@@ -64,7 +64,7 @@ namespace PizzaShop.Web.Controllers
                 // var categories = await _categoryService.GetAll();
                 var categories = await _categoryService.GetAllSP();
                 // var items = _itemService.GetAllItems();
-                var items = _itemService.GetAllItemsSP();
+                var items = await _itemService.GetAllItemsSP();
 
                 OrderInvoiceViewModel customerSummary = new();
                 if (validOrderId != null)
@@ -261,13 +261,29 @@ namespace PizzaShop.Web.Controllers
             }
             try
             {
-                var updated = await _customerService.UpdateAsync(model);
+                var updated = await _customerService.UpdateSPAsync(model);
                 if (!updated)
                 {
                     return Json(new { success = false, message = "Failed to update customer." });
                 }
 
                 return Json(new { success = true, message = "Customer updated successfully!" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                ModelState.AddModelError(string.Empty, ex.Message);
+
+                var errors = ModelState.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value?.Errors.Select(e => e.ErrorMessage).ToList()
+                );
+
+                return Json(new
+                {
+                    success = false,
+                    message = "Validation failed due to business rule violation.",
+                    errors
+                });
             }
             catch (Exception)
             {

@@ -121,5 +121,7 @@ namespace PizzaShop.Repository.Interfaces
              int[] tableIds);
 
         Task<CustomerUpdateRaw?> GetCustomerWithLatestOrderSPAsync(int customerId);
+
+        Task<(bool Success, string ErrorMessage)> UpdateCustomerAndOrdersSPAsync(CustomerUpdateViewModal customer);
     }
 }
