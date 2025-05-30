@@ -257,5 +257,11 @@ namespace PizzaShop.Repository.Interfaces
         Task<List<KOTFlatData>> GetKOTDataFromProcedureAsync(int pageNumber, int pageSize, int categoryId, string orderStatus, string itemStatus);
         Task<Order> GetOrderByIdSP(int orderId);
         Task<bool> SaveOrderCommentSP(int orderId, string comment);
+        Task<string> GetSpecialInstructionSP(int orderId, int orderedItemId);
+        Task<bool> SaveSpecialInstructionSP(
+            int orderId,
+            int orderedItemId,
+            string instruction
+        );
     }
 }

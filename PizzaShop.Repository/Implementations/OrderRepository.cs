@@ -364,6 +364,29 @@ namespace PizzaShop.Repository.Implementations
             return orderItem?.Itemwisecomment ?? string.Empty;
         }
         #endregion
+        #region GetSpecialInstructionSP
+        public async Task<string> GetSpecialInstructionSP(int orderId, int orderedItemId)
+        {
+            var parameters = new[]
+            {
+        new NpgsqlParameter("@p_order_id", orderId),
+        new NpgsqlParameter("@p_ordered_item_id", orderedItemId)
+    };
+
+            var orderedItem = await _context.Ordereditems
+                .FromSqlRaw("SELECT * FROM get_special_instruction(@p_order_id, @p_ordered_item_id)", parameters)
+                .FirstOrDefaultAsync();
+
+            if (orderedItem == null)
+            {
+                throw new InvalidOperationException($"Ordered item not found for Order ID {orderId} and Item ID {orderedItemId}.");
+            }
+
+            return orderedItem.Itemwisecomment ??
+                throw new InvalidOperationException($"No special instruction found for ordered item {orderedItemId} in order {orderId}.");
+        }
+        #endregion
+
 
         #region SaveSpecialInstruction
         public async Task<bool> SaveSpecialInstruction(
@@ -732,6 +755,31 @@ namespace PizzaShop.Repository.Implementations
          "CALL save_order_comment({0}, {1})", orderId, comment);
 
             return true;
+        }
+        #endregion
+
+        #region SaveSpecialInstructionSP
+        public async Task<bool> SaveSpecialInstructionSP(
+            int orderId,
+            int orderedItemId,
+            string instruction
+        )
+        {
+            try
+            {
+                await _context.Database.ExecuteSqlRawAsync(
+                    "CALL save_special_instruction({0}, {1}, {2})",
+                    orderId, orderedItemId, instruction
+                );
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception if needed
+                Console.WriteLine($"Error: {ex.Message}");
+                return false;
+            }
         }
         #endregion
     }

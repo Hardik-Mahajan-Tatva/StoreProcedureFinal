@@ -537,7 +537,8 @@ namespace PizzaShop.Service.Implementations
         #region  GetSpecialInstruction
         public async Task<string> GetSpecialInstruction(int orderId, int orderedItemId)
         {
-            return await _orderRepository.GetSpecialInstruction(orderId, orderedItemId);
+            // return await _orderRepository.GetSpecialInstruction(orderId, orderedItemId);
+            return await _orderRepository.GetSpecialInstructionSP(orderId, orderedItemId);
         }
         #endregion
 
@@ -548,7 +549,12 @@ namespace PizzaShop.Service.Implementations
             string instruction
         )
         {
-            return await _orderRepository.SaveSpecialInstruction(
+            // return await _orderRepository.SaveSpecialInstruction(
+            //     orderId,
+            //     orderedItemId,
+            //     instruction
+            // );
+            return await _orderRepository.SaveSpecialInstructionSP(
                 orderId,
                 orderedItemId,
                 instruction
