@@ -715,7 +715,24 @@ namespace PizzaShop.Repository.Implementations
             return result;
         }
 
+        #region GetOrderByIdSP
+        public async Task<Order> GetOrderByIdSP(int orderId)
+        {
+            var order = await _context.Orders
+        .FromSqlRaw("SELECT * FROM get_order_by_orderid({0})", orderId)
+        .FirstOrDefaultAsync();
 
+            return order ?? throw new InvalidOperationException($"Order with ID {orderId} not found.");
+        }
+        #endregion
+        #region SaveOrderCommentSP
+        public async Task<bool> SaveOrderCommentSP(int orderId, string comment)
+        {
+            var result = await _context.Database.ExecuteSqlRawAsync(
+         "CALL save_order_comment({0}, {1})", orderId, comment);
 
+            return true;
+        }
+        #endregion
     }
 }

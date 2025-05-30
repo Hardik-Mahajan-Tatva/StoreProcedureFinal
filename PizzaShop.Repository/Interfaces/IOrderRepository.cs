@@ -255,5 +255,7 @@ namespace PizzaShop.Repository.Interfaces
         Task<bool> HasOrderWithStatusAsync(int customerId, int[] statuses);
 
         Task<List<KOTFlatData>> GetKOTDataFromProcedureAsync(int pageNumber, int pageSize, int categoryId, string orderStatus, string itemStatus);
+        Task<Order> GetOrderByIdSP(int orderId);
+        Task<bool> SaveOrderCommentSP(int orderId, string comment);
     }
 }

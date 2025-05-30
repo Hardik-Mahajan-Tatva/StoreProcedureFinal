@@ -512,14 +512,16 @@ namespace PizzaShop.Service.Implementations
         #region  SaveOrderComment
         public async Task<bool> SaveOrderComment(int orderId, string comment)
         {
-            return await _orderRepository.SaveOrderComment(orderId, comment);
+            // return await _orderRepository.SaveOrderComment(orderId, comment);
+            return await _orderRepository.SaveOrderCommentSP(orderId, comment);
         }
         #endregion
 
         #region  GetOrderByOrderId
         public async Task<OrderCommentViewModel?> GetOrderById(int orderId)
         {
-            var order = await _orderRepository.GetOrderById(orderId);
+            // var order = await _orderRepository.GetOrderById(orderId);
+            var order = await _orderRepository.GetOrderByIdSP(orderId);
             if (order == null)
             {
                 return null; // Return null if the order is not found
