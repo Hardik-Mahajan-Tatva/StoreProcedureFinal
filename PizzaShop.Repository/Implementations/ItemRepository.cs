@@ -267,6 +267,17 @@ namespace Pizzashop.Repository.Implementations
             return listItems.AsQueryable();
         }
         #endregion
+
+        #region MarkAsFavoriteAsyncSP
+        public async Task<bool> MarkAsFavoriteAsyncSP(int itemId, bool isFavorite)
+        {
+            var result = await _context.Database.ExecuteSqlRawAsync(
+        "CALL mark_as_favorite({0}, {1})",
+        itemId, isFavorite
+    );
+            return true;
+        }
+        #endregion
     }
 }
 

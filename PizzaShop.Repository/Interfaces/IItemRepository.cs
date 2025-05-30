@@ -128,6 +128,7 @@ namespace Pizzashop.Repository.Interfaces
         /// <returns>A task representing the asynchronous operation.</returns>
         Task<List<int>> GetAllItemIds(int categoryId);
         Task<IQueryable<Item>> GetAllSP();
+        Task<bool> MarkAsFavoriteAsyncSP(int itemId, bool isFavorite);
     }
 }
 

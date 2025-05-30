@@ -173,7 +173,8 @@ namespace PizzaShop.Service.Implementations
         }
         public async Task<bool> MarkAsFavoriteAsync(int itemId, bool isFavorite)
         {
-            return await _itemRepository.MarkAsFavoriteAsync(itemId, isFavorite);
+            // return await _itemRepository.MarkAsFavoriteAsync(itemId, isFavorite);
+            return await _itemRepository.MarkAsFavoriteAsyncSP(itemId, isFavorite);
         }
         public async Task<List<int>> GetAllItemIds(int categoryId)
         {
