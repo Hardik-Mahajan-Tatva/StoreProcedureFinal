@@ -464,7 +464,8 @@ namespace PizzaShop.Web.Controllers
             }
             try
             {
-                await _orderService.SaveOrder(orderRequest);
+                // await _orderService.SaveOrder(orderRequest);
+                await _orderService.SaveOrderSP(orderRequest);
                 return Json(new { success = true, message = "Order saved successfully." });
             }
             catch (Exception ex)
@@ -474,29 +475,29 @@ namespace PizzaShop.Web.Controllers
         }
         #endregion
 
-        #region AvailableToDelete
-        [CustomAuthorize]
-        [HttpGet]
-        public async Task<IActionResult> AvailableToDelete(int itemId)
-        {
-            try
-            {
-                bool result = await _orderedItemService.IsItemAvailableToDelete(itemId);
-                if (!result)
-                {
-                    return Json(new { success = true, message = "Item is available to delete." });
-                }
-                else
-                {
-                    return Json(new { success = false, message = "Item is not available to delete." });
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
-        #endregion
+        // #region AvailableToDelete
+        // [CustomAuthorize]
+        // [HttpGet]
+        // public async Task<IActionResult> AvailableToDelete(int itemId)
+        // {
+        //     try
+        //     {
+        //         bool result = await _orderedItemService.IsItemAvailableToDelete(itemId);
+        //         if (!result)
+        //         {
+        //             return Json(new { success = true, message = "Item is available to delete." });
+        //         }
+        //         else
+        //         {
+        //             return Json(new { success = false, message = "Item is not available to delete." });
+        //         }
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         return Json(new { success = false, message = ex.Message });
+        //     }
+        // }
+        // #endregion
 
         #region GetTaxMapping
         [CustomAuthorize]

@@ -67,6 +67,7 @@ namespace PizzaShop.Service.Interfaces
         Task<bool> MarkOrderAsCompleteAsync(int orderId);
         Task<bool> CancelOrderAsync(int orderId);
         Task<PaginatedList<KOTViewModel>> GetKOTDetailsAsyncSP(int pageNumber, int pageSize, int categoryId, string itemStatus, string orderStatus = "");
+        Task SaveOrderSP(OrderRequestModel orderRequest);
 
 
     }

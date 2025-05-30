@@ -766,6 +766,13 @@ namespace PizzaShop.Service.Implementations
         }
 
         #endregion
+        #region  SaveOrderSP
+        public async Task SaveOrderSP(OrderRequestModel orderRequest)
+        {
+            await _orderRepository.SaveOrderSP(orderRequest);
+        }
+
+        #endregion
 
         #region  CheckReadyQuantityAsynce
         public async Task<string> CheckReadyQuantityAsync(int orderedItemId)

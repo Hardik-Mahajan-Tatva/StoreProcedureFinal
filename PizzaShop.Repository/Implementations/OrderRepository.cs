@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Npgsql;
+using NpgsqlTypes;
 using PizzaShop.Repository.Interfaces;
 using PizzaShop.Repository.Models;
 using PizzaShop.Repository.ViewModels;
@@ -793,7 +795,7 @@ namespace PizzaShop.Repository.Implementations
         }
         #endregion
 
-        
+
         #region MarkOrderAsCompleteByStoredProcAsync
         public async Task<bool> MarkOrderAsCompleteByStoredProcAsync(int orderId)
         {
@@ -803,6 +805,20 @@ namespace PizzaShop.Repository.Implementations
             return true;
         }
         #endregion
+
+
+        public async Task SaveOrderSP(OrderRequestModel orderRequest)
+        {
+            var orderJson = JsonConvert.SerializeObject(orderRequest);
+
+            var parameter = new NpgsqlParameter("order_data", NpgsqlDbType.Jsonb)
+            {
+                Value = orderJson
+            };
+
+            var sql = "CALL save_order(@order_data)";
+            await _context.Database.ExecuteSqlRawAsync(sql, parameter);
+        }
 
     }
 }
