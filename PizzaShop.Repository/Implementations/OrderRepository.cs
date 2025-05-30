@@ -793,5 +793,16 @@ namespace PizzaShop.Repository.Implementations
         }
         #endregion
 
+        
+        #region MarkOrderAsCompleteByStoredProcAsync
+        public async Task<bool> MarkOrderAsCompleteByStoredProcAsync(int orderId)
+        {
+            var result = await _context.Database.ExecuteSqlRawAsync(
+                "CALL mark_order_as_complete({0})", orderId);
+
+            return true;
+        }
+        #endregion
+
     }
 }

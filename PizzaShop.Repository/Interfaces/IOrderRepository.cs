@@ -264,5 +264,6 @@ namespace PizzaShop.Repository.Interfaces
             string instruction
         );
         Task<bool> CancelOrderByStoredProcAsyncSP(int orderId);
+        Task<bool> MarkOrderAsCompleteByStoredProcAsync(int orderId);
     }
 }

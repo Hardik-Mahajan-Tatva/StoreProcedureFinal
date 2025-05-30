@@ -789,33 +789,35 @@ namespace PizzaShop.Service.Implementations
         #region  MarkOrderAsCompleteAsynce
         public async Task<bool> MarkOrderAsCompleteAsync(int orderId)
         {
-            var order =
-                await _orderRepository.GetByIdAsync(orderId)
-                ?? throw new Exception("Order not found.");
+            // var order =
+            //     await _orderRepository.GetByIdAsync(orderId)
+            //     ?? throw new Exception("Order not found.");
 
-            if (order == null)
-                return false;
-            order.Status = (int)OrderStatus.Completed;
+            // if (order == null)
+            //     return false;
+            // order.Status = (int)OrderStatus.Completed;
 
 
-            var invoiceNumber = GenerateInvoiceNumber(orderId);
-            order.InvoiceNumber = invoiceNumber;
-            if (order.Customer != null)
-            {
-                order.Customer.Totalorder++;
-                await _customerRepository.UpdateCustomerAsync(order.Customer);
-            }
-            await _orderRepository.UpdateAsync(order);
+            // var invoiceNumber = GenerateInvoiceNumber(orderId);
+            // order.InvoiceNumber = invoiceNumber;
+            // if (order.Customer != null)
+            // {
+            //     order.Customer.Totalorder++;
+            //     await _customerRepository.UpdateCustomerAsync(order.Customer);
+            // }
+            // await _orderRepository.UpdateAsync(order);
 
-            foreach (var mapping in order.Ordertables)
-            {
-                if (mapping.Table != null)
-                {
-                    mapping.Table.Tablestatus = 1;
-                }
-            }
+            // foreach (var mapping in order.Ordertables)
+            // {
+            //     if (mapping.Table != null)
+            //     {
+            //         mapping.Table.Tablestatus = 1;
+            //     }
+            // }
 
-            return await _orderRepository.SaveChangesAsync();
+            // return await _orderRepository.SaveChangesAsync();
+            await _orderRepository.MarkOrderAsCompleteByStoredProcAsync(orderId);
+            return true;
         }
         #endregion
 
