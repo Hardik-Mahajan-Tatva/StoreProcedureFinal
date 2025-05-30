@@ -822,24 +822,26 @@ namespace PizzaShop.Service.Implementations
         #region  CancelOrderAsync
         public async Task<bool> CancelOrderAsync(int orderId)
         {
-            var order =
-                await _orderRepository.GetByIdAsync(orderId)
-                ?? throw new Exception("Order not found.");
+            // var order =
+            //     await _orderRepository.GetByIdAsync(orderId)
+            //     ?? throw new Exception("Order not found.");
 
-            if (order == null)
-                return false;
+            // if (order == null)
+            //     return false;
 
-            order.Status = (int)OrderStatus.Cancelled;
-            foreach (var mapping in order.Ordertables)
-            {
-                if (mapping.Table != null)
-                {
-                    mapping.Table.Tablestatus = 1;
-                }
-            }
+            // order.Status = (int)OrderStatus.Cancelled;
+            // foreach (var mapping in order.Ordertables)
+            // {
+            //     if (mapping.Table != null)
+            //     {
+            //         mapping.Table.Tablestatus = 1;
+            //     }
+            // }
 
-            await _orderRepository.UpdateAsync(order);
+            // await _orderRepository.UpdateAsync(order);
 
+            // return true;
+            await _orderRepository.CancelOrderByStoredProcAsyncSP(orderId);
             return true;
         }
         #endregion
@@ -897,6 +899,5 @@ namespace PizzaShop.Service.Implementations
 
             return new PaginatedList<KOTViewModel>(grouped, totalCount, pageNumber, pageSize);
         }
-
     }
 }

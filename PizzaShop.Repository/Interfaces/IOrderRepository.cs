@@ -263,5 +263,6 @@ namespace PizzaShop.Repository.Interfaces
             int orderedItemId,
             string instruction
         );
+        Task<bool> CancelOrderByStoredProcAsyncSP(int orderId);
     }
 }

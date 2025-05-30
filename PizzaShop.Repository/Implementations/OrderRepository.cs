@@ -782,5 +782,16 @@ namespace PizzaShop.Repository.Implementations
             }
         }
         #endregion
+
+        #region CancelOrderByStoredProcAsyncSP
+        public async Task<bool> CancelOrderByStoredProcAsyncSP(int orderId)
+        {
+            await _context.Database.ExecuteSqlRawAsync(
+                          "CALL cancel_order({0})", orderId);
+
+            return true;
+        }
+        #endregion
+
     }
 }
