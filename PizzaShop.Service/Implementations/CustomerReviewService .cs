@@ -20,22 +20,26 @@ public class CustomerReviewService : ICustomerReviewService
 
     public async Task AddReviewAsync(CustomerReviewViewModel model)
     {
-        var avgRating = (model.FoodRating + model.ServiceRating + model.AmbienceRating) / 3.0;
+        // var avgRating = (model.FoodRating + model.ServiceRating + model.AmbienceRating) / 3.0;
 
-        var order = await _orderRepository.GetByIdAsync(model.OrderId) ?? throw new Exception("Order not found.");
-        order.Rating = (decimal?)avgRating;
-        await _orderRepository.UpdateAsync(order);
-
+        // var order = await _orderRepository.GetByIdAsync(model.OrderId) ?? throw new Exception("Order not found.");
+        // order.Rating = (decimal?)avgRating;
+        // await _orderRepository.UpdateAsync(order);
+        var avgRating = Math.Round(
+               (model.FoodRating + model.ServiceRating + model.AmbienceRating) / 3.0,
+               2
+           );
         var review = new Customerreview
         {
             Orderid = model.OrderId,
             Foodrating = model.FoodRating,
             Servicerating = model.ServiceRating,
             Ambiencerating = model.AmbienceRating,
-            Avgrating = (float)Math.Round(avgRating, 2),
+            Avgrating = (float?)avgRating,
             Comments = model.Comment,
         };
 
-        await _repository.AddCustomerReviewAsync(review);
+        // await _repository.AddCustomerReviewAsync(review);
+        await _repository.AddCustomerReviewAsyncSP(review);
     }
 }

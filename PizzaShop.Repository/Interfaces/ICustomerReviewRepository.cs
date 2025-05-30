@@ -10,5 +10,6 @@ namespace PizzaShop.Repository.Interfaces
         /// <param name="customerReview">The customer review to be added.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         Task AddCustomerReviewAsync(Customerreview customerReview);
+        Task AddCustomerReviewAsyncSP(Customerreview customerReview);   
     }
 }
